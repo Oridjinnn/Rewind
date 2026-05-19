@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/habeldavidson007-glitch/rewind/internal/diff"
 	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
@@ -84,7 +85,52 @@ func main() {
 		}
 
 		replay.ReplaySession(session)
-		case "list":
+	
+	case "diff":
+
+		if len(os.Args) < 4 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind diff <sessionA> <sessionB>")
+			return
+		}
+
+		leftID := os.Args[2]
+		rightID := os.Args[3]
+
+		leftPath := filepath.Join(
+			"sessions",
+			leftID+".json",
+		)
+
+		rightPath := filepath.Join(
+			"sessions",
+			rightID+".json",
+		)
+
+		leftSession, err := storage.LoadSession(
+			leftPath,
+		)
+
+		if err != nil {
+			fmt.Println("failed loading left session:", err)
+			return
+		}
+
+		rightSession, err := storage.LoadSession(
+			rightPath,
+		)
+
+		if err != nil {
+			fmt.Println("failed loading right session:", err)
+			return
+		}
+
+		diff.CompareSessions(
+			leftSession,
+			rightSession,
+		)
+
+	case "list":
 
 		files, err := storage.ListSessions("sessions")
 
