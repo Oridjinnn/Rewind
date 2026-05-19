@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/habeldavidson007-glitch/rewind/internal/detect"
 	"github.com/habeldavidson007-glitch/rewind/internal/diff"
 	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
@@ -129,6 +130,32 @@ func main() {
 			leftSession,
 			rightSession,
 		)
+
+	case "detect":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind detect <session_id>")
+			return
+		}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+		)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+		)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+		}
+
+		detect.DetectLoops(session)
 
 	case "list":
 
