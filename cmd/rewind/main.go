@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/habeldavidson007-glitch/rewind/internal/export"
 	"github.com/habeldavidson007-glitch/rewind/internal/stats"
 	"github.com/habeldavidson007-glitch/rewind/internal/timeline"
 	"github.com/habeldavidson007-glitch/rewind/internal/detect"
@@ -132,6 +133,44 @@ func main() {
 			leftSession,
 			rightSession,
 		)
+
+	case "export":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind export <session_id>")
+			return
+		}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+		)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+		)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+		}
+
+		reportPath, err := export.ExportHTML(
+			session,
+		)
+
+		if err != nil {
+			fmt.Println("export failed:", err)
+			return
+		}
+
+		fmt.Println("")
+		fmt.Println("report generated:")
+		fmt.Println(reportPath)
+		fmt.Println("")
 
 	case "stats":
 
