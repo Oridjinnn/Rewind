@@ -6,14 +6,16 @@ import (
 	"path/filepath"
 
 	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
+	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 )
 
 func main() {
 
-	if len(os.Args) < 3 {
+	if len(os.Args) < 2 {
 		fmt.Println("usage:")
 		fmt.Println("  rewind run <command>")
+		fmt.Println("  rewind replay <session_id>")
 		return
 	}
 
@@ -22,6 +24,11 @@ func main() {
 	switch command {
 
 	case "run":
+
+		if len(os.Args) < 3 {
+			fmt.Println("missing command")
+			return
+		}
 
 		targetCommand := os.Args[2]
 		targetArgs := os.Args[3:]
@@ -52,6 +59,31 @@ func main() {
 		}
 
 		fmt.Println("session recorded:", session.ID)
+
+	case "replay":
+
+		if len(os.Args) < 3 {
+			fmt.Println("missing session id")
+			return
+		}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+		)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+		)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+		}
+
+		replay.ReplaySession(session)
 
 	default:
 		fmt.Println("unknown command")
