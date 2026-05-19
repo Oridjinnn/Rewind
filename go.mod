@@ -1,3 +1,3 @@
-module github.com/USERNAME/rewind
+module github.com/habeldavidson007-glitch/rewind
 
-go 1.22.2
+go 1.22
