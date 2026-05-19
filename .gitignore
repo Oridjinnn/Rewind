@@ -1,0 +1,20 @@
+# binaries
+bin/
+dist/
+
+# sessions
+sessions/
+
+# temp
+tmp/
+*.tmp
+
+# logs
+*.log
+
+# editor
+.vscode/
+.idea/
+
+# system
+.DS_Store
