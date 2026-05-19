@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/habeldavidson007-glitch/rewind/internal/timeline"
 	"github.com/habeldavidson007-glitch/rewind/internal/detect"
 	"github.com/habeldavidson007-glitch/rewind/internal/diff"
 	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
@@ -130,6 +131,32 @@ func main() {
 			leftSession,
 			rightSession,
 		)
+
+	case "timeline":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind timeline <session_id>")
+			return
+		}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+		)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+		)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+		}
+
+		timeline.RenderTimeline(session)
 
 	case "detect":
 
