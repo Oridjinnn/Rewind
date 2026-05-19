@@ -2,7 +2,9 @@ package recorder
 
 import (
 	"bufio"
+	"fmt"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/habeldavidson007-glitch/rewind/internal/utils"
@@ -35,31 +37,57 @@ func RecordCommand(command string, args []string) (types.Session, error) {
 		return session, err
 	}
 
-	stdoutScanner := bufio.NewScanner(stdout)
+	var wg sync.WaitGroup
 
-	for stdoutScanner.Scan() {
-		session.Events = append(
-			session.Events,
-			types.Event{
-				Timestamp: time.Now().Format(time.RFC3339),
-				Type:      "stdout",
-				Content:   stdoutScanner.Text(),
-			},
-		)
-	}
+	wg.Add(2)
 
-	stderrScanner := bufio.NewScanner(stderr)
+	go func() {
 
-	for stderrScanner.Scan() {
-		session.Events = append(
-			session.Events,
-			types.Event{
-				Timestamp: time.Now().Format(time.RFC3339),
-				Type:      "stderr",
-				Content:   stderrScanner.Text(),
-			},
-		)
-	}
+		defer wg.Done()
+
+		scanner := bufio.NewScanner(stdout)
+
+		for scanner.Scan() {
+
+			line := scanner.Text()
+
+			fmt.Println(line)
+
+			session.Events = append(
+				session.Events,
+				types.Event{
+					Timestamp: time.Now().Format(time.RFC3339),
+					Type:      "stdout",
+					Content:   line,
+				},
+			)
+		}
+	}()
+
+	go func() {
+
+		defer wg.Done()
+
+		scanner := bufio.NewScanner(stderr)
+
+		for scanner.Scan() {
+
+			line := scanner.Text()
+
+			fmt.Println(line)
+
+			session.Events = append(
+				session.Events,
+				types.Event{
+					Timestamp: time.Now().Format(time.RFC3339),
+					Type:      "stderr",
+					Content:   line,
+				},
+			)
+		}
+	}()
+
+	wg.Wait()
 
 	err = cmd.Wait()
 

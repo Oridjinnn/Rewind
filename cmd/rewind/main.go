@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
+	"strings"
 	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
@@ -84,7 +84,32 @@ func main() {
 		}
 
 		replay.ReplaySession(session)
+		case "list":
 
+		files, err := storage.ListSessions("sessions")
+
+		if err != nil {
+			fmt.Println("list failed:", err)
+			return
+		}
+
+		fmt.Println("")
+		fmt.Println("AVAILABLE SESSIONS")
+		fmt.Println("------------------")
+
+		for _, file := range files {
+
+			name := file.Name()
+
+			if strings.HasSuffix(name, ".json") {
+
+				fmt.Println(
+					strings.TrimSuffix(name, ".json"),
+				)
+			}
+		}
+
+		fmt.Println("")
 	default:
 		fmt.Println("unknown command")
 	}
