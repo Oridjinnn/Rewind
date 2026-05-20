@@ -3,6 +3,7 @@ package diff
 import (
 	"fmt"
 
+	"github.com/habeldavidson007-glitch/rewind/internal/ui"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
 
@@ -12,8 +13,13 @@ func CompareSessions(
 ) {
 
 	fmt.Println("")
-	fmt.Println("SESSION DIFF")
-	fmt.Println("----------------------")
+
+	fmt.Println(
+		ui.Header(
+			"REWIND SESSION DIFF",
+		),
+	)
+
 	fmt.Println("LEFT :", left.ID)
 	fmt.Println("RIGHT:", right.ID)
 	fmt.Println("")
@@ -28,27 +34,42 @@ func CompareSessions(
 
 		if i >= len(left.Events) {
 
-			fmt.Println("+", right.Events[i].Content)
+			fmt.Println(
+				ui.Success(
+					"[+] " + right.Events[i].Content,
+				),
+			)
+
 			continue
 		}
 
 		if i >= len(right.Events) {
 
-			fmt.Println("-", left.Events[i].Content)
+			fmt.Println(
+				ui.Error(
+					"[-] " + left.Events[i].Content,
+				),
+			)
+
 			continue
 		}
 
-		leftEvent := left.Events[i]
-		rightEvent := right.Events[i]
+		leftContent := left.Events[i].Content
+		rightContent := right.Events[i].Content
 
-		if leftEvent.Content == rightEvent.Content {
+		if leftContent != rightContent {
 
-			fmt.Println("=", leftEvent.Content)
+			fmt.Println(
+				ui.Error(
+					"[-] " + leftContent,
+				),
+			)
 
-		} else {
-
-			fmt.Println("-", leftEvent.Content)
-			fmt.Println("+", rightEvent.Content)
+			fmt.Println(
+				ui.Success(
+					"[+] " + rightContent,
+				),
+			)
 		}
 	}
 }

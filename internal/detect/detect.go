@@ -3,18 +3,27 @@ package detect
 import (
 	"fmt"
 
+	"github.com/habeldavidson007-glitch/rewind/internal/ui"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
 
 func DetectLoops(session types.Session) {
 
 	fmt.Println("")
-	fmt.Println("LOOP DETECTION")
-	fmt.Println("----------------------")
+
+	fmt.Println(
+		ui.Header(
+			"REWIND LOOP DETECTION",
+		),
+	)
 
 	counts := map[string]int{}
 
 	for _, event := range session.Events {
+
+		if event.Content == "" {
+			continue
+		}
 
 		counts[event.Content]++
 	}
@@ -28,19 +37,50 @@ func DetectLoops(session types.Session) {
 			found = true
 
 			fmt.Println("")
-			fmt.Println("LOOP DETECTED")
+
+			fmt.Println(
+				ui.Error(
+					"LOOP DETECTED",
+				),
+			)
+
 			fmt.Println("")
-			fmt.Println("Pattern:")
+
+			fmt.Println(
+				ui.Highlight(
+					"Pattern:",
+				),
+			)
+
 			fmt.Println(content)
+
 			fmt.Println("")
-			fmt.Println("Repeated:")
-			fmt.Printf("%d times\n", count)
+
+			fmt.Println(
+				ui.Highlight(
+					"Repeated:",
+				),
+			)
+
+			fmt.Printf(
+				"%s times\n",
+				ui.Error(
+					fmt.Sprintf("%d", count),
+				),
+			)
 		}
 	}
 
 	if !found {
 
 		fmt.Println("")
-		fmt.Println("No loops detected.")
+
+		fmt.Println(
+			ui.Success(
+				"No loops detected.",
+			),
+		)
 	}
+
+	fmt.Println("")
 }

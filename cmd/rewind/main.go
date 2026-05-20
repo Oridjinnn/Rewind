@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/habeldavidson007-glitch/rewind/internal/score"
+	"github.com/habeldavidson007-glitch/rewind/internal/inspect"
 	"github.com/habeldavidson007-glitch/rewind/internal/export"
 	"github.com/habeldavidson007-glitch/rewind/internal/stats"
 	"github.com/habeldavidson007-glitch/rewind/internal/timeline"
@@ -89,7 +91,7 @@ func main() {
 		}
 
 		replay.ReplaySession(session)
-	
+
 	case "diff":
 
 		if len(os.Args) < 4 {
@@ -250,6 +252,61 @@ func main() {
 
 		detect.DetectLoops(session)
 
+	case "inspect":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind inspect <session_id>")
+			return
+		}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+		)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+		)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+		}
+
+		inspect.PrintSessionInspect(
+			session,
+		)
+
+	case "score":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind score <session_id>")
+			return
+		}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+		)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+		)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+		}
+
+		score.PrintSessionScore(
+			session,
+		)
 	case "list":
 
 		files, err := storage.ListSessions("sessions")
