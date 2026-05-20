@@ -9,18 +9,13 @@ import (
 )
 
 func LoadSession(
-	sessionID string,
+	path string,
 ) (
 	types.Session,
 	error,
 ) {
 
 	var session types.Session
-
-	path := filepath.Join(
-		"sessions",
-		sessionID+".json",
-	)
 
 	data, err := os.ReadFile(path)
 

@@ -1,9 +1,17 @@
 package types
 
+import "time"
+
 type Event struct {
 	Timestamp string `json:"timestamp"`
 	Type      string `json:"type"`
 	Content   string `json:"content"`
+}
+
+type Message struct {
+	Role    string    `json:"role"`
+	Content string    `json:"content"`
+	Time    time.Time `json:"time"`
 }
 
 type Session struct {
