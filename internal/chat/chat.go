@@ -2,25 +2,19 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
 
 func LoadSession(
-	sessionID string,
-) (
-	types.Session,
-	error,
-) {
+	path string,
+) (types.Session, error) {
 
 	var session types.Session
-
-	path := filepath.Join(
-		"sessions",
-		sessionID+".json",
-	)
 
 	data, err := os.ReadFile(path)
 
@@ -40,15 +34,12 @@ func LoadSession(
 	return session, nil
 }
 
-func LoadAllSessions() (
-	[]types.Session,
-	error,
-) {
+func LoadAllSessions() ([]types.Session, error) {
 
 	var sessions []types.Session
 
-	files, err := filepath.Glob(
-		"sessions/*.json",
+	files, err := os.ReadDir(
+		"sessions",
 	)
 
 	if err != nil {
@@ -57,20 +48,31 @@ func LoadAllSessions() (
 
 	for _, file := range files {
 
-		data, err := os.ReadFile(file)
-
-		if err != nil {
+		if file.IsDir() {
 			continue
 		}
 
-		var session types.Session
+		if !strings.HasSuffix(
+			file.Name(),
+			".json",
+		) {
+			continue
+		}
 
-		err = json.Unmarshal(
-			data,
-			&session,
+		path := filepath.Join(
+			"sessions",
+			file.Name(),
+		)
+
+		session, err := LoadSession(
+			path,
 		)
 
 		if err != nil {
+			fmt.Println(
+				"failed loading:",
+				file.Name(),
+			)
 			continue
 		}
 

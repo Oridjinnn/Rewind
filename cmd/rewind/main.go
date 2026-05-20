@@ -5,6 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/habeldavidson007-glitch/rewind/internal/recall"
+	"github.com/habeldavidson007-glitch/rewind/internal/markdown"
+	"github.com/habeldavidson007-glitch/rewind/internal/chat"
 	"github.com/habeldavidson007-glitch/rewind/internal/score"
 	"github.com/habeldavidson007-glitch/rewind/internal/inspect"
 	"github.com/habeldavidson007-glitch/rewind/internal/export"
@@ -29,6 +32,17 @@ func main() {
 	command := os.Args[1]
 
 	switch command {
+
+	case "recall":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage: rewind recall <query>")
+			return
+		}
+
+		recall.Recall(
+			os.Args[2],
+		)
 
 	case "run":
 
@@ -307,6 +321,53 @@ func main() {
 		score.PrintSessionScore(
 			session,
 		)
+	case "chat":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind chat <model>")
+			return
+	}
+
+		model := os.Args[2]
+
+		chat.StartChat(
+			model,
+	)
+
+	case "markdown":
+
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind markdown <session_id>")
+			return
+	}
+
+		sessionID := os.Args[2]
+
+		sessionPath := filepath.Join(
+			"sessions",
+			sessionID+".json",
+	)
+
+		session, err := storage.LoadSession(
+			sessionPath,
+	)
+
+		if err != nil {
+			fmt.Println("load failed:", err)
+			return
+	}
+
+		err = markdown.ExportMarkdown(
+			session,
+	)
+
+		if err != nil {
+			fmt.Println("export failed:", err)
+			return
+	}
+
 	case "list":
 
 		files, err := storage.ListSessions("sessions")
