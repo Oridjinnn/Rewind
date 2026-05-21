@@ -84,7 +84,7 @@ class RecorderService {
     private fun projectName(project: Project) = project.name
     private fun projectPath(project: Project) = project.basePath ?: ""
 
-    private fun detectIDEName(): String {
+    fun detectIDEName(): String {
         val name = ApplicationManager.getApplication().getName()
         return when {
             name.contains("GoLand", true) -> "goland"

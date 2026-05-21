@@ -1,7 +1,6 @@
 package ide
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -50,8 +49,6 @@ func (r *SQLiteRecorder) RecordEvent(event types.IDEEvent) error {
 		ts = time.Now().UTC().Format(time.RFC3339Nano)
 	}
 
-	metaJSON, _ := json.Marshal(event.Event.Metadata)
-
 	activity := types.IDEActivity{
 		IDEName:      event.IDE,
 		ProjectName:  event.Project,
@@ -89,8 +86,6 @@ func (r *SQLiteRecorder) RecordEvent(event types.IDEEvent) error {
 		activity.Metadata["cursor_line"] = event.Event.CursorLine
 		activity.Metadata["cursor_column"] = event.Event.CursorColumn
 	}
-	_ = metaJSON // used above
-
 	return r.store.RecordIDEActivity(activity)
 }
 

@@ -45,6 +45,11 @@ htmlcov/
 .env.local
 .env.*
 
+# Rewind database files
+rewind.db
+rewind.db-wal
+rewind.db-shm
+
 # System files
 .DS_Store
 Thumbs.db

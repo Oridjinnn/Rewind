@@ -17,7 +17,7 @@ import (
 	"github.com/habeldavidson007-glitch/rewind/internal/timeline"
 	"github.com/habeldavidson007-glitch/rewind/internal/detect"
 	"github.com/habeldavidson007-glitch/rewind/internal/diff"
-	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
+	rec "github.com/habeldavidson007-glitch/rewind/internal/recorder"
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 	"github.com/habeldavidson007-glitch/rewind/internal/shell"
@@ -155,7 +155,7 @@ func main() {
 		targetCommand := os.Args[2]
 		targetArgs := os.Args[3:]
 
-		session, err := recorder.RecordCommand(
+		session, err := rec.RecordCommand(
 			targetCommand,
 			targetArgs,
 		)
