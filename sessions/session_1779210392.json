@@ -1,0 +1,54 @@
+{
+  "id": "session_1779210392",
+  "command": "ping",
+  "started_at": "2026-05-20T00:06:32+07:00",
+  "ended_at": "2026-05-20T00:06:35+07:00",
+  "exit_code": 0,
+  "events": [
+    {
+      "timestamp": "2026-05-20T00:06:32+07:00",
+      "type": "stdout",
+      "content": "PING google.com (142.251.12.113) 56(84) bytes of data."
+    },
+    {
+      "timestamp": "2026-05-20T00:06:32+07:00",
+      "type": "stdout",
+      "content": "64 bytes from se-in-f113.1e100.net (142.251.12.113): icmp_seq=1 ttl=109 time=25.0 ms"
+    },
+    {
+      "timestamp": "2026-05-20T00:06:33+07:00",
+      "type": "stdout",
+      "content": "64 bytes from se-in-f113.1e100.net (142.251.12.113): icmp_seq=2 ttl=109 time=23.5 ms"
+    },
+    {
+      "timestamp": "2026-05-20T00:06:34+07:00",
+      "type": "stdout",
+      "content": "64 bytes from se-in-f113.1e100.net (142.251.12.113): icmp_seq=3 ttl=109 time=22.3 ms"
+    },
+    {
+      "timestamp": "2026-05-20T00:06:35+07:00",
+      "type": "stdout",
+      "content": "64 bytes from se-in-f113.1e100.net (142.251.12.113): icmp_seq=4 ttl=109 time=25.0 ms"
+    },
+    {
+      "timestamp": "2026-05-20T00:06:35+07:00",
+      "type": "stdout",
+      "content": ""
+    },
+    {
+      "timestamp": "2026-05-20T00:06:35+07:00",
+      "type": "stdout",
+      "content": "--- google.com ping statistics ---"
+    },
+    {
+      "timestamp": "2026-05-20T00:06:35+07:00",
+      "type": "stdout",
+      "content": "4 packets transmitted, 4 received, 0% packet loss, time 3003ms"
+    },
+    {
+      "timestamp": "2026-05-20T00:06:35+07:00",
+      "type": "stdout",
+      "content": "rtt min/avg/max/mdev = 22.346/23.959/25.025/1.125 ms"
+    }
+  ]
+}

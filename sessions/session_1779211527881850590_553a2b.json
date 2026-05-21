@@ -1,0 +1,14 @@
+{
+  "id": "session_1779211527881850590_553a2b",
+  "command": "echo",
+  "started_at": "2026-05-20T00:25:27+07:00",
+  "ended_at": "2026-05-20T00:25:27+07:00",
+  "exit_code": 0,
+  "events": [
+    {
+      "timestamp": "2026-05-20T00:25:27+07:00",
+      "type": "stdout",
+      "content": "timeline-test"
+    }
+  ]
+}

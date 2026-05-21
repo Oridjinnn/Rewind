@@ -1,0 +1,26 @@
+{
+  "id": "session_1779269446069965909_472a68",
+  "command": "",
+  "model": "qwen2.5:3b",
+  "title": "Greeting conversation",
+  "summary": "Automatically generated conversation summary.",
+  "tags": [
+    "greeting"
+  ],
+  "mood": "casual",
+  "started_at": "2026-05-20T16:30:46+07:00",
+  "ended_at": "2026-05-20T16:31:29+07:00",
+  "exit_code": 0,
+  "events": [
+    {
+      "timestamp": "2026-05-20T16:30:50+07:00",
+      "type": "user_message",
+      "content": "hello qwen!"
+    },
+    {
+      "timestamp": "2026-05-20T16:31:02+07:00",
+      "type": "assistant_message",
+      "content": "⠋ ⠙ ⠸ ⠸ ⠴ ⠴ ⠦ ⠇ ⠏ ⠏ ⠙ ⠹ ⠹ ⠸ ⠴ ⠴ ⠧ ⠧ ⠇ ⠏ ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠏ ⠏ ⠙ ⠹ ⠹ ⠸ ⠼ ⠦ ⠦ ⠧ ⠇ ⠋ ⠙ ⠙ ⠹ ⠸ ⠼ ⠦ ⠦ ⠇ ⠇ ⠏ ⠋ ⠙ ⠹ ⠸ ⠴ ⠴ ⠦ ⠧ ⠏ ⠋ ⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠋ ⠙ ⠹ ⠼ ⠼ ⠦ ⠦ ⠧ ⠇ ⠏ ⠙ ⠹ ⠹ ⠼ ⠼ ⠴ ⠦ ⠧ ⠏ ⠏ ⠙ ⠹ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏ ⠋ ⠙ ⠹ ⠸ ⠴ ⠦ ⠦ ⠧ ⠏ ⠋ ⠋ Hello! How can I assist you today?\n\n"
+    }
+  ]
+}

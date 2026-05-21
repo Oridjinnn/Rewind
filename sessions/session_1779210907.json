@@ -1,0 +1,14 @@
+{
+  "id": "session_1779210907",
+  "command": "echo",
+  "started_at": "2026-05-20T00:15:07+07:00",
+  "ended_at": "2026-05-20T00:15:07+07:00",
+  "exit_code": 0,
+  "events": [
+    {
+      "timestamp": "2026-05-20T00:15:07+07:00",
+      "type": "stdout",
+      "content": "goodbye"
+    }
+  ]
+}

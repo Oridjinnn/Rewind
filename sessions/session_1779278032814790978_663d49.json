@@ -1,0 +1,28 @@
+{
+  "id": "session_1779278032814790978_663d49",
+  "command": "",
+  "model": "qwen2.5:1.5b",
+  "title": "AI conversation",
+  "summary": "Automatically generated conversation summary.",
+  "mood": "neutral",
+  "started_at": "2026-05-20T18:53:52+07:00",
+  "ended_at": "2026-05-20T18:56:01+07:00",
+  "exit_code": 0,
+  "events": [
+    {
+      "timestamp": "2026-05-20T18:54:43+07:00",
+      "type": "user_message",
+      "content": "i need persistent memory for my ai"
+    },
+    {
+      "timestamp": "2026-05-20T18:54:43+07:00",
+      "type": "stderr",
+      "content": "exit status 1"
+    },
+    {
+      "timestamp": "2026-05-20T18:54:43+07:00",
+      "type": "assistant_message",
+      "content": "Model failed to generate response."
+    }
+  ]
+}
