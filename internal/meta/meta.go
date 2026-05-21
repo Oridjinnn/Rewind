@@ -36,44 +36,19 @@ func GenerateMetadata(
 
 	switch {
 
-	case strings.Contains(firstMessage, "hello"),
-		strings.Contains(firstMessage, "hi"):
-
-		session.Title =
-			"Greeting conversation"
-
-		session.Tags = append(
-			session.Tags,
-			"greeting",
-		)
-
+	case containsAny(firstMessage, "hello", "hi"):
+		session.Title = "Greeting conversation"
+		session.Tags = append(session.Tags, "greeting")
 		session.Mood = "casual"
 
-	case strings.Contains(firstMessage, "fix"),
-		strings.Contains(firstMessage, "error"),
-		strings.Contains(firstMessage, "bug"):
-
-		session.Title =
-			"Debugging session"
-
-		session.Tags = append(
-			session.Tags,
-			"debugging",
-		)
-
+	case containsAny(firstMessage, "fix", "error", "bug"):
+		session.Title = "Debugging session"
+		session.Tags = append(session.Tags, "debugging")
 		session.Mood = "focused"
 
-	case strings.Contains(firstMessage, "design"),
-		strings.Contains(firstMessage, "architecture"):
-
-		session.Title =
-			"System design discussion"
-
-		session.Tags = append(
-			session.Tags,
-			"architecture",
-		)
-
+	case containsAny(firstMessage, "design", "architecture"):
+		session.Title = "System design discussion"
+		session.Tags = append(session.Tags, "architecture")
 		session.Mood = "creative"
 
 	default:
@@ -88,4 +63,13 @@ func GenerateMetadata(
 
 	session.Summary =
 		"Automatically generated conversation summary."
+}
+
+func containsAny(s string, keywords ...string) bool {
+	for _, k := range keywords {
+		if strings.Contains(s, k) {
+			return true
+		}
+	}
+	return false
 }
