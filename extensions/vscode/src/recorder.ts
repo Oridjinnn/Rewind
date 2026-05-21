@@ -65,6 +65,11 @@ export class RewindRecorder {
         this.enabled = on;
     }
 
+    /** Returns true if recording is currently enabled. */
+    isEnabled(): boolean {
+        return this.enabled;
+    }
+
     private getProjectInfo(): { name: string; path: string } {
         const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length > 0) {

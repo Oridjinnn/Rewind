@@ -8,6 +8,9 @@ import { RewindRecorder } from './recorder';
 import { RewindStatusBar } from './statusbar';
 import { spawn, ChildProcess } from 'child_process';
 
+const MAX_SERVER_START_RETRIES = 10; // Max attempts to check health after spawning
+const SERVER_START_RETRY_DELAY_MS = 1000; // Delay between health checks
+
 let recorder: RewindRecorder;
 let statusBar: RewindStatusBar;
 let protocol: RewindProtocol;
@@ -25,9 +28,14 @@ export function activate(context: vscode.ExtensionContext) {
     // Check if recording should start
     const autoStart = config.get('serverEnabled', true);
     if (autoStart) {
-        ensureServerRunning();
-        recorder.start();
-        statusBar.setRecording(true);
+        ensureServerRunning().then(success => {
+            if (success) {
+                recorder.start();
+                statusBar.setRecording(true);
+            } else {
+                statusBar.setRecording(false); // Server failed to start, don't show recording
+            }
+        });
     }
 
     // Register commands
@@ -90,43 +98,96 @@ export function deactivate() {
 
 // --- Command Handlers ---
 
-async function ensureServerRunning() {
+async function ensureServerRunning(): Promise<boolean> {
     const healthy = await protocol.checkHealth();
-    if (healthy) return;
+    if (healthy) {
+        console.log('[Rewind] Backend server already running and healthy.');
+        return true;
+    }
 
-    console.log('[Rewind] Starting backend server...');
-    
-    serverProcess = spawn('rewind', ['ide', 'start'], {
-        shell: true,
-        stdio: 'ignore',
-        detached: true
+    let serverSpawnedSuccessfully = false;
+
+    await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: "Starting Rewind Backend Server",
+        cancellable: false
+    }, async (progress) => {
+        progress.report({ message: "Launching Rewind backend process..." });
+
+        if (!serverProcess) { // Hanya spawn jika belum pernah dicoba atau gagal sebelumnya
+            serverProcess = spawn('rewind', ['ide', 'start'], {
+                shell: true,
+                stdio: 'ignore', // Tetap ini untuk menghindari output yang mengotori VS Code
+                detached: true
+            });
+
+            serverProcess.on('error', (err) => {
+                vscode.window.showErrorMessage(`Failed to start Rewind server: ${err.message}. Pastikan "rewind" CLI ada di PATH Anda.`);
+                serverProcess = null; // Izinkan spawn ulang pada percobaan berikutnya
+                serverSpawnedSuccessfully = false; // Tandai spawn sebagai gagal
+            });
+
+            serverProcess.on('exit', (code, signal) => {
+                if (code !== 0 && code !== null) { // Kode keluar bukan nol berarti kegagalan
+                    console.error(`[Rewind] Backend server process exited with code ${code}`);
+                    // Hanya tampilkan error jika bukan karena sinyal kill dari deactivate
+                    if (signal !== 'SIGTERM' && signal !== 'SIGKILL') {
+                        vscode.window.showErrorMessage(`Rewind backend server process exited unexpectedly with code ${code}.`);
+                    }
+                }
+                serverProcess = null; // Proses sudah tidak ada
+            });
+
+            // Beri waktu sebentar agar proses benar-benar dimulai
+            await new Promise(resolve => setTimeout(resolve, 500));
+            serverSpawnedSuccessfully = (serverProcess !== null); // Asumsikan berhasil jika objek proses ada
+        } else {
+            // Jika serverProcess sudah ada, berarti spawn sebelumnya sudah dicoba
+            // dan kita hanya menunggu agar menjadi sehat.
+            serverSpawnedSuccessfully = true;
+        }
+
+        if (!serverSpawnedSuccessfully) {
+            // Jika spawn itu sendiri gagal (misalnya, 'rewind' tidak ditemukan), tidak ada gunanya melakukan health check
+            return; // Keluar dari callback progress
+        }
+
+        let isServerHealthy = false;
+        for (let i = 0; i < MAX_SERVER_START_RETRIES; i++) {
+            progress.report({ increment: 100 / MAX_SERVER_START_RETRIES, message: `Checking server health (${i + 1}/${MAX_SERVER_START_RETRIES})...` });
+            isServerHealthy = await protocol.checkHealth();
+            if (isServerHealthy) {
+                console.log('[Rewind] Backend server is healthy.');
+                break; // Server sehat, keluar dari loop
+            }
+            await new Promise(resolve => setTimeout(resolve, SERVER_START_RETRY_DELAY_MS));
+        }
+
+        if (!isServerHealthy) {
+            vscode.window.showErrorMessage(
+                'Rewind backend server failed to become healthy after multiple attempts. Please check your "rewind" CLI installation and ensure no other process is using port 9876.'
+            );
+            console.error('[Rewind] Backend server failed to start or respond.');
+        }
     });
-
-    serverProcess.on('error', (err) => {
-        vscode.window.showErrorMessage(`Failed to start Rewind server: ${err.message}. Make sure "rewind" CLI is in your PATH.`);
-    });
-
-    // Give it a second to boot up
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    return await protocol.checkHealth(); // Kembalikan status kesehatan akhir
 }
 
 async function handleToggleRecording() {
     const isRecording = statusBar.isRecording;
     if (isRecording) {
-        const healthy = await protocol.checkHealth();
-        if (!healthy) {
-            const action = 'Start Server';
-            vscode.window.showErrorMessage('Rewind server not running. Recording cannot start.', action)
-                .then(selection => { if (selection === action) handleShowStatus(); });
-            return;
-        }
         recorder.setEnabled(false);
         statusBar.setRecording(false);
         vscode.window.showInformationMessage('Rewind recording paused.');
     } else {
-        recorder.setEnabled(true);
-        statusBar.setRecording(true);
-        vscode.window.showInformationMessage('Rewind recording resumed.');
+        const serverReady = await ensureServerRunning();
+        if (serverReady) {
+            recorder.setEnabled(true);
+            statusBar.setRecording(true);
+            vscode.window.showInformationMessage('Rewind recording resumed.');
+        } else {
+            vscode.window.showErrorMessage('Rewind server is not running. Recording cannot be started.');
+        }
     }
 }
 
