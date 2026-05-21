@@ -64,15 +64,20 @@ export function activate(context: vscode.ExtensionContext) {
     // Periodically check server health
     const healthInterval = setInterval(async () => {
         const healthy = await protocol.checkHealth();
-        
+
         if (!healthy) {
-            // Jangan langsung mematikan recording, beri tahu user bahwa server tidak merespon
-            // Kita tetap biarkan status 'recording' jika user memang ingin merekam, 
-            // tapi mungkin status bar bisa menampilkan icon 'error/warning' (perlu update statusbar.ts)
-            console.warn('Rewind server is unreachable. Make sure to run "rewind ide start"');
+            console.warn('[Rewind] Rewind server is unreachable. Recording might be paused.');
+            // Jika server menjadi tidak sehat, dan kita sedang merekam, perbarui status bar
+            if (statusBar.isRecording) { // Periksa status bar, bukan recorder.isEnabled()
+                statusBar.setRecording(false); // Ini akan menampilkan latar belakang peringatan
+                vscode.window.showWarningMessage('Rewind backend server became unreachable. Recording paused.');
+            }
+        } else {
+            // Jika server sehat, dan kita seharusnya merekam, pastikan status bar mencerminkannya
+            if (recorder.isEnabled() && !statusBar.isRecording) {
+                statusBar.setRecording(true);
+            }
         }
-        
-        // Biarkan status bar tetap sinkron dengan keadaan 'recorder' yang sebenarnya
     }, 30000); // every 30 seconds
 
     context.subscriptions.push({

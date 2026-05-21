@@ -165,22 +165,23 @@ func main() {
 			return
 		}
 
-		sessionPath := filepath.Join(
-			"sessions",
-			session.ID+".json",
-		)
-
-		err = storage.SaveSession(
-			session,
-			sessionPath,
-		)
-
-		if err != nil {
-			fmt.Println("save failed:", err)
-			return
+		// Try to save to SQLite first for v0.3 consistency
+		st, err := getStorage()
+		if err == nil { // If SQLite storage is available
+			defer st.Close()
+			err = st.SaveSession(session)
+			if err != nil {
+				fmt.Println("save to SQLite failed, falling back to JSON:", err)
+			} else {
+				fmt.Println("session recorded (SQLite):", session.ID)
+				return
+			}
 		}
 
-		fmt.Println("session recorded:", session.ID)
+		// JSON Fallback (either getStorage failed, or SQLite SaveSession failed)
+		sessionPath := filepath.Join("sessions", session.ID+".json")
+		storage.SaveSession(session, sessionPath) // Assuming this always works for JSON
+		fmt.Println("session recorded (JSON):", session.ID)
 
 	case "replay":
 

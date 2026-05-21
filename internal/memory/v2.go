@@ -10,9 +10,15 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/Oridjinnn/Rewind/pkg/types"
 )
+
+// Global http client with timeout to prevent hanging
+var ollamaClient = &http.Client{
+	Timeout: 10 * time.Second,
+}
 
 type EmbedResponse struct {
 	Embedding []float64 `json:"embedding"`
@@ -121,7 +127,7 @@ func EmbedText(text string) ([]float64, error) {
 
 	body, _ := json.Marshal(payload)
 
-	resp, err := http.Post(
+	resp, err := ollamaClient.Post(
 		"http://127.0.0.1:11434/api/embeddings",
 		"application/json",
 		bytes.NewBuffer(body),

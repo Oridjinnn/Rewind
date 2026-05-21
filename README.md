@@ -85,7 +85,7 @@ Rewind captures every command, file edit, build, test, and AI interaction—then
 
 ### Prerequisites
 
-- **Go 1.22+** | **Ollama** (for AI features) | **SQLite** (bundled, zero CGO)
+- **Go 1.22+** | **Ollama** (for AI features) | **SQLite** (bundled, zero-CGO)
 - AI models: `ollama pull qwen2.5:1.5b && ollama pull nomic-embed-text`
 
 ### Build & Setup

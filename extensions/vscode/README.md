@@ -4,7 +4,7 @@
 
 Track file edits, terminal commands, git operations, builds, tests, and AI assistant interactions. Everything is stored locally in SQLite — fully private, no cloud.
 
-Part of the [Rewind](https://github.com/habeldavidson007-glitch/rewind) ecosystem. Works with VS Code and Cursor.
+Part of the Rewind ecosystem. Works with VS Code and Cursor.
 
 ---
 
