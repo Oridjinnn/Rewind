@@ -6,9 +6,13 @@ import (
 	"os/exec"
 	"sync"
 	"time"
+	"github.com/habeldavidson007-glitch/rewind/internal/redact"
+	"github.com/Oridjinnn/Rewind/internal/redact"
 
 	"github.com/habeldavidson007-glitch/rewind/internal/utils"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/utils"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 func RecordCommand(command string, args []string) (types.Session, error) {
@@ -51,14 +55,21 @@ func RecordCommand(command string, args []string) (types.Session, error) {
 
 			line := scanner.Text()
 
-			fmt.Println(line)
+			// Apply redaction before storing or printing
+			redacted := redact.RedactCommand(line)
+			if redacted == "" && line != "" {
+				// If redact mode is 'skip', we don't even print it to the console
+				continue
+			}
+
+			fmt.Println(redacted)
 
 			session.Events = append(
 				session.Events,
 				types.Event{
 					Timestamp: time.Now().Format(time.RFC3339),
 					Type:      "stdout",
-					Content:   line,
+					Content:   redacted,
 				},
 			)
 		}
@@ -74,14 +85,19 @@ func RecordCommand(command string, args []string) (types.Session, error) {
 
 			line := scanner.Text()
 
-			fmt.Println(line)
+			redacted := redact.RedactCommand(line)
+			if redacted == "" && line != "" {
+				continue
+			}
+
+			fmt.Println(redacted)
 
 			session.Events = append(
 				session.Events,
 				types.Event{
 					Timestamp: time.Now().Format(time.RFC3339),
 					Type:      "stderr",
-					Content:   line,
+					Content:   redacted,
 				},
 			)
 		}

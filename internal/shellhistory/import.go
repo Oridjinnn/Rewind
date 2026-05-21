@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/redact"
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/internal/redact"
+	"github.com/Oridjinnn/Rewind/internal/storage"
 )
 
 // ImportConfig holds import configuration.

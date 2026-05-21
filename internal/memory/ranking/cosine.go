@@ -3,6 +3,10 @@ package ranking
 import "math"
 
 func Cosine(a, b []float64) float64 {
+	// Bounds check to prevent panic and handle empty vectors
+	if len(a) != len(b) || len(a) == 0 {
+		return 0
+	}
 
 	var dot, magA, magB float64
 

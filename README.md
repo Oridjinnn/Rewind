@@ -91,7 +91,7 @@ Rewind captures every command, file edit, build, test, and AI interaction—then
 ### Build & Setup
 
 ```bash
-git clone https://github.com/habeldavidson007-glitch/rewind.git
+git clone https://github.com/Oridjinnn/Rewind.git
 cd rewind
 go build ./cmd/rewind                           # Build the CLI
 

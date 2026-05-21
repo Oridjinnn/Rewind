@@ -146,21 +146,14 @@ func EmbedText(text string) ([]float64, error) {
 }
 
 func CosineSimilarity(a, b []float64) float64 {
-
-	// HARD GUARD (INI FIX CRASH KAMU)
-	if len(a) == 0 || len(b) == 0 {
+	// Ensure vectors are the same length and not empty
+	if len(a) != len(b) || len(a) == 0 {
 		return 0
-	}
-
-	// safety mismatch vector length
-	minLen := len(a)
-	if len(b) < minLen {
-		minLen = len(b)
 	}
 
 	var dot, normA, normB float64
 
-	for i := 0; i < minLen; i++ {
+	for i := 0; i < len(a); i++ {
 		dot += a[i] * b[i]
 		normA += a[i] * a[i]
 		normB += b[i] * b[i]
