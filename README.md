@@ -10,6 +10,8 @@ Rewind captures every command, file edit, build, test, and AI interaction—then
 [![JetBrains](https://img.shields.io/badge/JetBrains-plugin-orange?logo=intellij-idea)](extensions/jetbrains)
 [![Neovim](https://img.shields.io/badge/Neovim-plugin-green?logo=neovim)](extensions/nvim)
 
+![Demo](demo.gif)
+
 ---
 
 ## ✨ Features

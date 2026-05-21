@@ -482,30 +482,40 @@ func main() {
 		}
 
 	case "list":
+		// List sessions from SQLite (fallback to JSON)
+		st, err := getStorage()
+		if err == nil {
+			defer st.Close()
+			ids, listErr := st.ListSessions()
+			if listErr == nil && len(ids) > 0 {
+				fmt.Println("")
+				fmt.Println("AVAILABLE SESSIONS (SQLite)")
+				fmt.Println("---------------------------")
+				for _, id := range ids {
+					fmt.Println("  " + id)
+				}
+				fmt.Println("")
+				return
+			}
+		}
 
+		// JSON fallback
 		files, err := storage.ListSessions("sessions")
-
 		if err != nil {
 			fmt.Println("list failed:", err)
 			return
 		}
 
 		fmt.Println("")
-		fmt.Println("AVAILABLE SESSIONS")
-		fmt.Println("------------------")
+		fmt.Println("AVAILABLE SESSIONS (JSON)")
+		fmt.Println("-------------------------")
 
 		for _, file := range files {
-
 			name := file.Name()
-
 			if strings.HasSuffix(name, ".json") {
-
-				fmt.Println(
-					strings.TrimSuffix(name, ".json"),
-				)
+				fmt.Println("  " + strings.TrimSuffix(name, ".json"))
 			}
 		}
-
 		fmt.Println("")
 
 	case "setup":

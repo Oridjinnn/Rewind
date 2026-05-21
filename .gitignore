@@ -60,6 +60,12 @@ rewind
 # Embedding cache
 .rewind/
 
+# Demo generation artifacts
+demo.cast
+demo.gif
+_demo_script.sh
+make_demo.sh
+
 # System files
 .DS_Store
 Thumbs.db
