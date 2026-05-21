@@ -50,6 +50,16 @@ rewind.db
 rewind.db-wal
 rewind.db-shm
 
+# Session data (personal - do not commit)
+sessions/
+exports/
+
+# Compiled binary
+rewind
+
+# Embedding cache
+.rewind/
+
 # System files
 .DS_Store
 Thumbs.db
