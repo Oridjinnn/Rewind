@@ -52,30 +52,45 @@ func BuildConversation(
 }
 
 // GenerateSummary creates a structured summary of the session
+// Merges 4 separate Ollama calls into 1 structured prompt (4x faster).
 func GenerateSummary(conversation string) string {
-	
-	// Extract key points
-	keyPoints := ExtractKeyPoints(conversation)
-	
-	// Extract entities
-	entities := ExtractEntities(conversation)
-	
-	// Generate one-liner
-	oneLiner := GenerateOneLiner(conversation)
-	
-	// Analyze sentiment
-	sentiment := AnalyzeSentiment(conversation)
+	prompt := fmt.Sprintf(`Analyze this conversation and return a JSON object with these fields:
+{
+  "one_liner": "1 sentence summary (max 15 words)",
+  "key_points": ["point1", "point2", "point3"],
+  "entities": ["entity1", "entity2"],
+  "sentiment": "positive|negative|neutral|confused|excited|frustrated"
+}
+
+Return ONLY the JSON, no other text.
+
+Conversation:
+%s`, conversation)
+
+	response := QueryOllamaSimple("qwen2.5:1.5b", prompt)
+
+	// Parse structured JSON response
+	var parsed struct {
+		OneLiner  string   `json:"one_liner"`
+		KeyPoints []string `json:"key_points"`
+		Entities  []string `json:"entities"`
+		Sentiment string   `json:"sentiment"`
+	}
+
+	if err := json.Unmarshal([]byte(response), &parsed); err != nil {
+		// Fallback: treat whole response as summary if JSON parse fails
+		parsed.OneLiner = response
+	}
 
 	summary := SummaryData{
-		Title:      oneLiner,
-		OneLiners:  oneLiner,
-		KeyPoints:  keyPoints,
-		Entities:   entities,
-		Sentiment:  sentiment,
+		Title:      parsed.OneLiner,
+		OneLiners:  parsed.OneLiner,
+		KeyPoints:  parsed.KeyPoints,
+		Entities:   parsed.Entities,
+		Sentiment:  parsed.Sentiment,
 		EventCount: strings.Count(conversation, "USER:") + strings.Count(conversation, "ASSISTANT:"),
 	}
 
-	// Return as formatted text for display
 	result := fmt.Sprintf(`Summary: %s
 Key Points: %s
 Sentiment: %s
@@ -87,86 +102,6 @@ Entities: %s`,
 	)
 
 	return result
-}
-
-// ExtractKeyPoints uses Ollama to extract main topics
-func ExtractKeyPoints(conversation string) []string {
-	
-	prompt := `Extract 3-5 key points from this conversation. Return only the points, one per line.
-
-Conversation:
-` + conversation
-
-	response := QueryOllamaSimple("qwen2.5:1.5b", prompt)
-	
-	lines := strings.Split(response, "\n")
-	var points []string
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line != "" && !strings.HasPrefix(line, "-") {
-			points = append(points, line)
-		} else if strings.HasPrefix(line, "-") {
-			points = append(points, strings.TrimPrefix(strings.TrimSpace(line), "- "))
-		}
-	}
-
-	if len(points) > 5 {
-		points = points[:5]
-	}
-
-	return points
-}
-
-// ExtractEntities finds named entities in conversation
-func ExtractEntities(conversation string) []string {
-	
-	prompt := `List important named entities (people, places, projects, tools) from this conversation. Return only the names, comma-separated.
-
-Conversation:
-` + conversation
-
-	response := QueryOllamaSimple("qwen2.5:1.5b", prompt)
-	
-	entities := strings.Split(response, ",")
-	var result []string
-	for _, e := range entities {
-		e = strings.TrimSpace(e)
-		if e != "" {
-			result = append(result, e)
-		}
-	}
-
-	if len(result) > 5 {
-		result = result[:5]
-	}
-
-	return result
-}
-
-// AnalyzeSentiment determines overall tone of conversation
-func AnalyzeSentiment(conversation string) string {
-	
-	prompt := `In one word, describe the sentiment of this conversation (positive, negative, neutral, confused, excited, frustrated, etc):
-
-Conversation:
-` + conversation
-
-	response := QueryOllamaSimple("qwen2.5:1.5b", prompt)
-	
-	return strings.TrimSpace(response)
-}
-
-// GenerateOneLiner creates a concise summary sentence
-func GenerateOneLiner(conversation string) string {
-	
-	prompt := `Summarize this conversation in exactly 1 concise sentence (max 15 words):
-
-Conversation:
-` + conversation
-
-	response := QueryOllamaSimple("qwen2.5:1.5b", prompt)
-	
-	return strings.TrimSpace(response)
 }
 
 // QueryOllamaSimple is a helper for simple Ollama queries

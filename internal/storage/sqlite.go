@@ -210,24 +210,69 @@ func (s *SQLiteStore) LoadSession(id string) (types.Session, error) {
 }
 
 // LoadAllSessions implements Storage.LoadAllSessions.
+// Uses a single JOIN query to avoid N+1 queries (fixes audit issue #6).
 func (s *SQLiteStore) LoadAllSessions() ([]types.Session, error) {
-	rows, err := s.db.Query("SELECT id FROM sessions ORDER BY started_at DESC")
+	rows, err := s.db.Query(`
+		SELECT s.id, s.command, s.model, s.title, s.summary, s.tags, s.mood,
+		       s.started_at, s.ended_at, s.exit_code,
+		       e.timestamp, e.type, e.content
+		FROM sessions s
+		LEFT JOIN events e ON e.session_id = s.id
+		ORDER BY s.started_at DESC, e.id
+	`)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list sessions: %w", err)
+		return nil, fmt.Errorf("failed to query sessions: %w", err)
 	}
 	defer rows.Close()
 
 	var sessions []types.Session
+	var current *types.Session
+
 	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
+		var (
+			id, command, model, title, summary, tagsJSON, mood string
+			startedAt, endedAt                                 string
+			exitCode                                            int
+			eventTimestamp, eventType, eventContent             sql.NullString
+		)
+		if err := rows.Scan(&id, &command, &model, &title, &summary, &tagsJSON, &mood,
+			&startedAt, &endedAt, &exitCode,
+			&eventTimestamp, &eventType, &eventContent); err != nil {
 			continue
 		}
-		session, err := s.LoadSession(id)
-		if err != nil {
-			continue
+
+		// Start new session if id changes
+		if current == nil || current.ID != id {
+			if current != nil {
+				sessions = append(sessions, *current)
+			}
+			s := types.Session{
+				ID:        id,
+				Command:   command,
+				Model:     model,
+				Title:     title,
+				Summary:   summary,
+				Mood:      mood,
+				StartedAt: startedAt,
+				EndedAt:   endedAt,
+				ExitCode:  exitCode,
+				Events:    []types.Event{},
+			}
+			json.Unmarshal([]byte(tagsJSON), &s.Tags)
+			current = &s
 		}
-		sessions = append(sessions, session)
+
+		// Append event if present
+		if eventTimestamp.Valid {
+			current.Events = append(current.Events, types.Event{
+				Timestamp: eventTimestamp.String,
+				Type:      eventType.String,
+				Content:   eventContent.String,
+			})
+		}
+	}
+	if current != nil {
+		sessions = append(sessions, *current)
 	}
 
 	return sessions, nil

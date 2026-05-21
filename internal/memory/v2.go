@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
@@ -31,9 +32,10 @@ type EmbeddingCache struct {
 	Events    []EventEmbedding   `json:"events"`
 }
 
-// GetCachePath returns the path to the embedding cache file for a session
+// GetCachePath returns the path to the embedding cache file for a session.
+// Embedding cache is stored in .rewind/embeddings/ (separated from user session data).
 func GetCachePath(sessionID string) string {
-	return filepath.Join("sessions", fmt.Sprintf("%s_embeddings.json", sessionID))
+	return filepath.Join(".rewind", "embeddings", fmt.Sprintf("%s.json", sessionID))
 }
 
 // LoadEmbeddingCache loads cached embeddings from disk
@@ -228,14 +230,10 @@ func RankMemories(query string, sessions []types.Session, topK int) ([]RankedMem
 		}
 	}
 
-	// sort DESC (simple)
-	for i := 0; i < len(ranked); i++ {
-		for j := i + 1; j < len(ranked); j++ {
-			if ranked[j].Score > ranked[i].Score {
-				ranked[i], ranked[j] = ranked[j], ranked[i]
-			}
-		}
-	}
+	// Sort by score descending (O(n log n))
+	sort.Slice(ranked, func(i, j int) bool {
+		return ranked[i].Score > ranked[j].Score
+	})
 
 	if len(ranked) > topK {
 		ranked = ranked[:topK]

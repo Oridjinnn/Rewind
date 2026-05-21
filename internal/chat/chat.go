@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/habeldavidson007-glitch/rewind/internal/memory"
+	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
 
@@ -27,81 +27,7 @@ type OllamaStreamResponse struct {
 	Done     bool   `json:"done"`
 }
 
-func LoadSession(
-	path string,
-) (types.Session, error) {
-
-	var session types.Session
-
-	data, err := os.ReadFile(path)
-
-	if err != nil {
-		return session, err
-	}
-
-	err = json.Unmarshal(
-		data,
-		&session,
-	)
-
-	if err != nil {
-		return session, err
-	}
-
-	return session, nil
-}
-
-func LoadAllSessions() ([]types.Session, error) {
-
-	var sessions []types.Session
-
-	files, err := os.ReadDir(
-		"sessions",
-	)
-
-	if err != nil {
-		return sessions, err
-	}
-
-	for _, file := range files {
-
-		if file.IsDir() {
-			continue
-		}
-
-		if !strings.HasSuffix(
-			file.Name(),
-			".json",
-		) {
-			continue
-		}
-
-		path := filepath.Join(
-			"sessions",
-			file.Name(),
-		)
-
-		session, err := LoadSession(
-			path,
-		)
-
-		if err != nil {
-			fmt.Println(
-				"failed loading:",
-				file.Name(),
-			)
-			continue
-		}
-
-		sessions = append(
-			sessions,
-			session,
-		)
-	}
-
-	return sessions, nil
-}
-
+// StartChat starts an interactive chat session that saves to SQLite on exit.
 func StartChat(model string) {
 	fmt.Println("Starting chat with model:", model)
 	fmt.Println("Type 'exit' to quit")
@@ -112,9 +38,10 @@ func StartChat(model string) {
 
 	var messages []types.Message
 	var conversationContext string
+	sessionID := fmt.Sprintf("chat_%d", time.Now().UnixNano())
 
-	// Pre-load all sessions for memory recall
-	sessions, err := LoadAllSessions()
+	// Pre-load all sessions for memory recall using storage layer
+	sessions, err := storage.LoadAllSessions()
 	if err != nil {
 		fmt.Println("Warning: Could not load sessions for memory recall:", err)
 	}
@@ -197,6 +124,91 @@ func StartChat(model string) {
 		}
 		messages = append(messages, assistantMsg)
 	}
+
+	// Save chat session to SQLite storage
+	saveChatSession(sessionID, model, messages)
+}
+
+// saveChatSession persists the chat conversation as a session in SQLite.
+func saveChatSession(sessionID, model string, messages []types.Message) {
+	if len(messages) == 0 {
+		return
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+
+	// Convert messages to events
+	var events []types.Event
+	for _, msg := range messages {
+		events = append(events, types.Event{
+			Timestamp: msg.Time.UTC().Format(time.RFC3339Nano),
+			Type:      msg.Role, // "user" or "assistant"
+			Content:   msg.Content,
+		})
+	}
+
+	// Build title from first user message
+	title := "Chat session"
+	summary := fmt.Sprintf("Chat with %s - %d messages", model, len(messages))
+	if len(messages) > 0 {
+		firstMsg := messages[0].Content
+		if len(firstMsg) > 80 {
+			firstMsg = firstMsg[:77] + "..."
+		}
+		title = firstMsg
+	}
+
+	session := types.Session{
+		ID:        sessionID,
+		Command:   fmt.Sprintf("rewind chat %s", model),
+		Model:     model,
+		Title:     title,
+		Summary:   summary,
+		StartedAt: now,
+		EndedAt:   now,
+		ExitCode:  0,
+		Events:    events,
+	}
+
+	// Try to save to SQLite via getStorage pattern
+	// Fall back to JSON if SQLite unavailable
+	if os.Getenv("REWIND_USE_JSON") == "true" {
+		saveJSONFallback(session)
+		return
+	}
+
+	dbPath := os.Getenv("REWIND_DB_PATH")
+	if dbPath == "" {
+		dbPath = "rewind.db"
+	}
+
+	store, err := storage.NewSQLiteStore(dbPath)
+	if err != nil {
+		saveJSONFallback(session)
+		return
+	}
+	defer store.Close()
+
+	if err := store.SaveSession(session); err != nil {
+		fmt.Printf("Note: Failed to save chat session to SQLite: %v\n", err)
+		saveJSONFallback(session)
+		return
+	}
+
+	fmt.Printf("Chat session saved: %s\n", sessionID)
+}
+
+// saveJSONFallback saves session as JSON when SQLite is unavailable.
+func saveJSONFallback(session types.Session) {
+	if err := os.MkdirAll("sessions", 0755); err != nil {
+		return
+	}
+	path := fmt.Sprintf("sessions/%s.json", session.ID)
+	data, err := json.MarshalIndent(session, "", "  ")
+	if err != nil {
+		return
+	}
+	os.WriteFile(path, data, 0644)
 }
 
 // QueryOllamaStreaming sends a prompt to Ollama and streams the response in real-time
