@@ -1,0 +1,129 @@
+{
+  "name": "rewind-ide",
+  "displayName": "Rewind IDE - Terminal Memory & Activity Tracker",
+  "description": "Record, replay, and recall your IDE activity with AI-powered memory. Tracks file edits, terminal commands, git operations, builds, tests, and AI assistant interactions. Works with VS Code and Cursor.",
+  "version": "0.1.0",
+  "publisher": "rewind",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Data Science"
+  ],
+  "keywords": [
+    "rewind",
+    "memory",
+    "terminal",
+    "activity",
+    "productivity",
+    "ai",
+    "tracking"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "rewind.toggleRecording",
+        "title": "Rewind: Toggle Recording On/Off"
+      },
+      {
+        "command": "rewind.showStatus",
+        "title": "Rewind: Show Recording Status"
+      },
+      {
+        "command": "rewind.showActivity",
+        "title": "Rewind: View Recent Activity"
+      },
+      {
+        "command": "rewind.showProjects",
+        "title": "Rewind: View Tracked Projects"
+      },
+      {
+        "command": "rewind.analyzeProject",
+        "title": "Rewind: Analyze Current Project"
+      },
+      {
+        "command": "rewind.searchHistory",
+        "title": "Rewind: Search Shell History"
+      },
+      {
+        "command": "rewind.importShellHistory",
+        "title": "Rewind: Import Shell History"
+      },
+      {
+        "command": "rewind.openPermissions",
+        "title": "Rewind: Manage Recording Permissions"
+      }
+    ],
+    "configuration": {
+      "title": "Rewind",
+      "properties": {
+        "rewind.serverPort": {
+          "type": "number",
+          "default": 9876,
+          "description": "Port for the Rewind IDE recording server"
+        },
+        "rewind.serverEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-start Rewind server on VS Code startup"
+        },
+        "rewind.recordFileEdits": {
+          "type": "boolean",
+          "default": true,
+          "description": "Record file save/edit events"
+        },
+        "rewind.recordTerminalCommands": {
+          "type": "boolean",
+          "default": true,
+          "description": "Record terminal commands"
+        },
+        "rewind.recordBuildAndTest": {
+          "type": "boolean",
+          "default": true,
+          "description": "Record build and test events"
+        },
+        "rewind.recordGitOperations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Record git operations (commit, push, pull)"
+        },
+        "rewind.recordAIAssistant": {
+          "type": "boolean",
+          "default": true,
+          "description": "Record AI assistant interactions (Copilot, Cursor)"
+        },
+        "rewind.recordContentSnapshots": {
+          "type": "boolean",
+          "default": false,
+          "description": "Record file content snapshots (for richer AI context)"
+        },
+        "rewind.autoSendBatch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Batch-send events instead of one-by-one"
+        },
+        "rewind.batchIntervalMs": {
+          "type": "number",
+          "default": 5000,
+          "description": "Batch send interval in milliseconds"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}

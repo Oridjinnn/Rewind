@@ -21,6 +21,7 @@ import (
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 	"github.com/habeldavidson007-glitch/rewind/internal/shell"
+	"github.com/habeldavidson007-glitch/rewind/internal/ide"
 	"github.com/habeldavidson007-glitch/rewind/internal/shellhistory"
 	"github.com/habeldavidson007-glitch/rewind/internal/web"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
@@ -91,6 +92,18 @@ func loadSessionJSONFull(id string) (*sessionWithStore, error) {
 	return &sessionWithStore{session: session, store: nil}, nil
 }
 
+// getSQLiteStore returns a raw SQLiteStore for IDE operations.
+func getSQLiteStore() (*storage.SQLiteStore, error) {
+	st, err := getStorage()
+	if err != nil {
+		return nil, err
+	}
+	if s, ok := st.(*storage.SQLiteStore); ok {
+		return s, nil
+	}
+	return nil, fmt.Errorf("SQLite storage not available")
+}
+
 func main() {
 
 	if len(os.Args) < 2 {
@@ -107,6 +120,13 @@ func main() {
 		fmt.Println("  rewind history [limit]     # View shell history")
 		fmt.Println("  rewind import-history [shell|path] # Import from shell history files")
 		fmt.Println("  rewind history-stats       # Shell history statistics")
+		fmt.Println("  rewind ide start [port]    # Start IDE recording server")
+		fmt.Println("  rewind ide stop            # Stop IDE recording server")
+		fmt.Println("  rewind ide status          # Show IDE recording status")
+		fmt.Println("  rewind ide permissions [ide] [on|off]   # Manage opt-in")
+		fmt.Println("  rewind ide activity [ide] [limit]       # View IDE activity")
+		fmt.Println("  rewind ide projects        # List tracked IDE projects")
+		fmt.Println("  rewind ide analyze [project]            # Productivity insights")
 		return
 	}
 
@@ -684,6 +704,208 @@ func main() {
 		}
 
 		shellhistory.PrintStats(stats)
+
+	case "ide":
+		// IDE integration subcommands
+		if len(os.Args) < 3 {
+			fmt.Println("usage:")
+			fmt.Println("  rewind ide start [port]")
+			fmt.Println("  rewind ide stop")
+			fmt.Println("  rewind ide status")
+			fmt.Println("  rewind ide permissions [ide] [on|off]")
+			fmt.Println("  rewind ide activity [ide] [limit]")
+			fmt.Println("  rewind ide projects")
+			fmt.Println("  rewind ide analyze [project]")
+			return
+		}
+
+		ideCommand := os.Args[2]
+
+		switch ideCommand {
+		case "start":
+			port := ide.ServerPort
+			if len(os.Args) >= 4 {
+				if p, err := strconv.Atoi(os.Args[3]); err == nil {
+					port = p
+				}
+			}
+
+			st, err := getSQLiteStore()
+			if err != nil {
+				fmt.Println("IDE server requires SQLite:", err)
+				return
+			}
+			defer st.Close()
+
+			recorder := ide.NewSQLiteRecorder(st)
+			server := ide.NewServer(recorder, port)
+
+			if err := server.Start(); err != nil {
+				fmt.Printf("Server error: %v\n", err)
+			}
+
+		case "stop":
+			fmt.Println("IDE server stop — send SIGINT/Ctrl+C to the running server process.")
+
+		case "status":
+			st, err := getSQLiteStore()
+			if err != nil {
+				fmt.Println("IDE status requires SQLite:", err)
+				return
+			}
+			defer st.Close()
+
+			recorder := ide.NewSQLiteRecorder(st)
+			status, err := recorder.GetStatus()
+			if err != nil {
+				fmt.Println("failed to get status:", err)
+				return
+			}
+
+			fmt.Println("")
+			fmt.Println("IDE RECORDING STATUS")
+			fmt.Println("=====================")
+			fmt.Printf("Server running:  %v\n", status.ServerRunning)
+			if status.ServerRunning {
+				fmt.Printf("Server port:     %d\n", status.ServerPort)
+			}
+			fmt.Printf("Activity count:  %d\n", status.ActivityCount)
+			fmt.Printf("Connected IDEs:  %v\n", status.ConnectedIDEs)
+			if status.ActiveProject != "" {
+				fmt.Printf("Active project:  %s\n", status.ActiveProject)
+			}
+			ide.PrintPermissions(status.Permissions)
+
+		case "permissions":
+			if len(os.Args) < 5 {
+				// Display current permissions
+				st, err := getSQLiteStore()
+				if err != nil {
+					fmt.Println("permissions require SQLite:", err)
+					return
+				}
+				defer st.Close()
+
+				recorder := ide.NewSQLiteRecorder(st)
+				status, err := recorder.GetStatus()
+				if err != nil {
+					fmt.Println("failed:", err)
+					return
+				}
+				ide.PrintPermissions(status.Permissions)
+				fmt.Println("Usage: rewind ide permissions <ide> <on|off>")
+				fmt.Println("Example: rewind ide permissions vscode on")
+				return
+			}
+
+			ideName := os.Args[3]
+			action := os.Args[4]
+			projectPath := "*"
+			if len(os.Args) >= 6 {
+				projectPath = os.Args[5]
+			}
+
+			st, err := getSQLiteStore()
+			if err != nil {
+				fmt.Println("permissions require SQLite:", err)
+				return
+			}
+			defer st.Close()
+
+			recorder := ide.NewSQLiteRecorder(st)
+
+			switch action {
+			case "on":
+				if err := ide.EnableRecording(recorder, ideName, projectPath); err != nil {
+					fmt.Printf("Error: %v\n", err)
+					return
+				}
+				fmt.Printf(" Recording enabled for %s (project: %s)\n", ide.IDEToHumanName(ideName), projectPath)
+				fmt.Println("   file recording: ON")
+				fmt.Println("   terminal recording: ON")
+				fmt.Println("   AI recording: ON")
+			case "off":
+				if err := ide.DisableRecording(recorder, ideName, projectPath); err != nil {
+					fmt.Printf("Error: %v\n", err)
+					return
+				}
+				fmt.Printf(" Recording disabled for %s (project: %s)\n", ide.IDEToHumanName(ideName), projectPath)
+			default:
+				fmt.Println("Invalid action. Use 'on' or 'off'.")
+			}
+
+		case "activity":
+			ideName := ""
+			if len(os.Args) >= 4 {
+				ideName = os.Args[3]
+			}
+			limit := 30
+			if len(os.Args) >= 5 {
+				if l, err := strconv.Atoi(os.Args[4]); err == nil && l > 0 {
+					limit = l
+				}
+			}
+
+			st, err := getSQLiteStore()
+			if err != nil {
+				fmt.Println("activity requires SQLite:", err)
+				return
+			}
+			defer st.Close()
+
+			recorder := ide.NewSQLiteRecorder(st)
+			activities, err := recorder.QueryActivity(types.IDEActivityFilter{
+				IDEName: ideName,
+				Limit:   limit,
+			})
+			if err != nil {
+				fmt.Println("failed:", err)
+				return
+			}
+			ide.PrintActivity(activities)
+
+		case "projects":
+			st, err := getSQLiteStore()
+			if err != nil {
+				fmt.Println("projects require SQLite:", err)
+				return
+			}
+			defer st.Close()
+
+			recorder := ide.NewSQLiteRecorder(st)
+			projects, err := recorder.GetProjects()
+			if err != nil {
+				fmt.Println("failed:", err)
+				return
+			}
+			ide.PrintProjects(projects)
+
+		case "analyze":
+			if len(os.Args) < 4 {
+				fmt.Println("usage: rewind ide analyze <project-path>")
+				return
+			}
+			projectPath := os.Args[3]
+
+			st, err := getSQLiteStore()
+			if err != nil {
+				fmt.Println("analyze requires SQLite:", err)
+				return
+			}
+			defer st.Close()
+
+			recorder := ide.NewSQLiteRecorder(st)
+			insight, err := ide.AnalyzeProject(recorder, projectPath)
+			if err != nil {
+				fmt.Printf("Analysis error: %v\n", err)
+				return
+			}
+			ide.PrintInsight(insight)
+
+		default:
+			fmt.Printf("Unknown ide command: %s\n", ideCommand)
+			fmt.Println("Valid: start, stop, status, permissions, activity, projects, analyze")
+		}
 
 	default:
 		fmt.Println("unknown command")
