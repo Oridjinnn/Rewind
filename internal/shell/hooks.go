@@ -3,13 +3,12 @@ package shell
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
+	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
 
 // GetSetupScript returns the shell setup code that user should add to their rc file
@@ -120,9 +119,27 @@ func TrackCommand(cmdStr string, exitCode int) error {
 		return err
 	}
 
+	// Convert SessionRecord to types.Session for storage
+	ts := types.Session{
+		ID:        session.ID,
+		Command:   session.Command,
+		Title:     session.Title,
+		Summary:   session.Summary,
+		StartedAt: session.StartedAt,
+		EndedAt:   session.EndedAt,
+		ExitCode:  session.ExitCode,
+	}
+	for _, e := range session.Events {
+		ts.Events = append(ts.Events, types.Event{
+			Timestamp: e.Timestamp,
+			Type:      e.Type,
+			Content:   e.Content,
+		})
+	}
+
 	// Save session
-	sessionPath := filepath.Join("sessions", session.ID+".json")
-	err = storage.SaveSession(session, sessionPath)
+	sessionPath := filepath.Join("sessions", ts.ID+".json")
+	err = storage.SaveSession(ts, sessionPath)
 	if err != nil {
 		return fmt.Errorf("failed to save session: %w", err)
 	}
@@ -197,8 +214,6 @@ type SessionRecord struct {
 
 // PrintSetupInstructions shows user how to install the shell hook
 func PrintSetupInstructions(shell string) {
-	rewindPath, _ := os.Executable()
-
 	fmt.Println("")
 	fmt.Println("╔════════════════════════════════════════════════════════════════╗")
 	fmt.Println("║  Rewind Shell Integration Setup                                ║")
