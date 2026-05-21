@@ -20,6 +20,7 @@ import (
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 	"github.com/habeldavidson007-glitch/rewind/internal/shell"
+	"github.com/habeldavidson007-glitch/rewind/internal/web"
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 		fmt.Println("usage:")
 		fmt.Println("  rewind run <command>")
 		fmt.Println("  rewind replay <session_id>")
+		fmt.Println("  rewind web [port]         # Start the Rewind web UI")
 		fmt.Println("  rewind setup              # Setup auto-recording for your shell")
 		fmt.Println("  rewind chat <model>       # Chat with memory")
 		fmt.Println("  rewind recall <query>     # Search sessions")
@@ -333,13 +335,13 @@ func main() {
 			fmt.Println("usage:")
 			fmt.Println("  rewind chat <model>")
 			return
-	}
+		}
 
 		model := os.Args[2]
 
 		chat.StartChat(
 			model,
-	)
+		)
 
 	case "markdown":
 
@@ -347,32 +349,44 @@ func main() {
 			fmt.Println("usage:")
 			fmt.Println("  rewind markdown <session_id>")
 			return
-	}
+		}
 
 		sessionID := os.Args[2]
 
 		sessionPath := filepath.Join(
 			"sessions",
 			sessionID+".json",
-	)
+		)
 
 		session, err := storage.LoadSession(
 			sessionPath,
-	)
+		)
 
 		if err != nil {
 			fmt.Println("load failed:", err)
 			return
-	}
+		}
 
 		err = markdown.ExportMarkdown(
 			session,
-	)
+		)
 
 		if err != nil {
 			fmt.Println("export failed:", err)
 			return
-	}
+		}
+
+	case "web":
+		port := 8080
+		if len(os.Args) >= 3 {
+			if parsed, err := strconv.Atoi(os.Args[2]); err == nil {
+				port = parsed
+			}
+		}
+		fmt.Printf("Starting web UI on http://localhost:%d\n", port)
+		if err := web.Serve(port); err != nil {
+			fmt.Println("web server error:", err)
+		}
 
 	case "list":
 
@@ -400,6 +414,7 @@ func main() {
 		}
 
 		fmt.Println("")
+
 	case "setup":
 		// Shell integration setup
 		shellType := shell.DetectShell()

@@ -24,6 +24,7 @@ Rewind captures every command execution, output, and interaction—then lets you
 - **`rewind detect <session_id>`** — Detect infinite loops and performance issues
 
 ### AI Memory & Chat
+- **`rewind web [port]`** — Start the Rewind web UI in your browser
 - **`rewind recall <query>`** — Search across all sessions using semantic embeddings
 - **`rewind chat <model>`** — Interactive chat with Ollama, using session context
   - Real-time streaming responses (see AI output as it's generated)
@@ -124,10 +125,12 @@ rewind diff <id1> <id2>            # Compare two sessions
 
 ### AI Features
 ```bash
+rewind web [port]                 # Start the Rewind web UI
 rewind recall <query>              # Search via embeddings across all sessions
 rewind chat <model>                # Start interactive chat with memory
 
 # Example queries
+rewind web 8080
 rewind recall "database migration"
 rewind recall "connection timeout"
 rewind chat qwen2.5:1.5b
@@ -360,7 +363,7 @@ Rewind captures everything, indexes it intelligently, and makes it queryable wit
 - [x] Structured summaries
 - [x] Streaming responses (real-time output)
 - [x] Shell integration (auto-record with hooks)
-- [ ] Web UI for session browser
+- [x] Web UI for session browser
 - [ ] Database backend (SQLite)
 - [ ] System shell history integration
 
