@@ -26,8 +26,10 @@ Rewind captures every command execution, output, and interaction—then lets you
 ### AI Memory & Chat
 - **`rewind recall <query>`** — Search across all sessions using semantic embeddings
 - **`rewind chat <model>`** — Interactive chat with Ollama, using session context
-- Automatic context injection from relevant past sessions
-- Embedding cache for 900x speedup on repeated queries
+  - Real-time streaming responses (see AI output as it's generated)
+  - Automatic context injection from relevant past sessions
+  - Embedding cache for 900x speedup on repeated queries
+- **`rewind setup`** — Auto-record all your commands (shell integration)
 
 ### Export & Sharing
 - **`rewind export <session_id>`** — Generate HTML report
@@ -71,6 +73,33 @@ go build ./cmd/rewind
 
 # Export as HTML
 ./rewind export 1779265115474389394_585791
+```
+
+### Auto-Recording Setup (Shell Integration)
+
+Make Rewind invisible—automatically record every command without forgetting:
+
+```bash
+# Step 1: Show setup instructions
+./rewind setup
+
+# Step 2: Add the code to your shell config (~/.bashrc, ~/.zshrc, etc)
+# Step 3: Reload your shell
+source ~/.bashrc  # or ~/.zshrc for zsh
+
+# Done! Every command now auto-records
+cd ~/ && ls        # ← this is automatically recorded
+./rewind list      # ← see it in the list
+```
+
+**Supported shells**: bash, zsh, fish
+
+**Why this matters**: Most people forget to use `rewind run`. Auto-recording means you get the benefits without changing your workflow.
+
+**Control it anytime**:
+```bash
+export REWIND_ENABLED=false   # Disable
+export REWIND_ENABLED=true    # Re-enable
 ```
 
 ---
@@ -295,11 +324,12 @@ To use different models, edit the model names in:
 
 Issues and PRs welcome. Key areas:
 
-- Streaming responses (right now responses are buffered)
 - Sqlite backend for embeddings (vs JSON)
 - Web UI for session browser
-- Integration with shell history
+- Integration with system shell history
 - Windows support
+- Keyboard shortcuts in chat
+- Multi-model support (Claude, GPT, etc via HTTP APIs)
 
 ---
 
@@ -328,10 +358,11 @@ Rewind captures everything, indexes it intelligently, and makes it queryable wit
 - [x] Embedding-based search with cache
 - [x] Chat with memory injection
 - [x] Structured summaries
-- [ ] Streaming responses
-- [ ] Web UI
-- [ ] Shell integration
-- [ ] Database backend
+- [x] Streaming responses (real-time output)
+- [x] Shell integration (auto-record with hooks)
+- [ ] Web UI for session browser
+- [ ] Database backend (SQLite)
+- [ ] System shell history integration
 
 ---
 

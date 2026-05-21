@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"github.com/habeldavidson007-glitch/rewind/internal/recall"
 	"github.com/habeldavidson007-glitch/rewind/internal/markdown"
@@ -18,6 +19,7 @@ import (
 	"github.com/habeldavidson007-glitch/rewind/internal/recorder"
 	"github.com/habeldavidson007-glitch/rewind/internal/replay"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
+	"github.com/habeldavidson007-glitch/rewind/internal/shell"
 )
 
 func main() {
@@ -26,6 +28,10 @@ func main() {
 		fmt.Println("usage:")
 		fmt.Println("  rewind run <command>")
 		fmt.Println("  rewind replay <session_id>")
+		fmt.Println("  rewind setup              # Setup auto-recording for your shell")
+		fmt.Println("  rewind chat <model>       # Chat with memory")
+		fmt.Println("  rewind recall <query>     # Search sessions")
+		fmt.Println("  rewind list               # List all sessions")
 		return
 	}
 
@@ -394,6 +400,32 @@ func main() {
 		}
 
 		fmt.Println("")
+	case "setup":
+		// Shell integration setup
+		shellType := shell.DetectShell()
+		shell.PrintSetupInstructions(shellType)
+
+	case "track-command":
+		// Auto-track command (called by shell hooks)
+		if len(os.Args) < 3 {
+			fmt.Println("usage: rewind track-command <command> [exit_code]")
+			return
+		}
+
+		cmd := os.Args[2]
+		exitCode := 0
+
+		if len(os.Args) >= 4 {
+			if code, err := strconv.Atoi(os.Args[3]); err == nil {
+				exitCode = code
+			}
+		}
+
+		err := shell.TrackCommand(cmd, exitCode)
+		if err != nil {
+			fmt.Printf("Track failed: %v\n", err)
+		}
+
 	default:
 		fmt.Println("unknown command")
 	}

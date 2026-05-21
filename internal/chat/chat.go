@@ -105,17 +105,12 @@ func LoadAllSessions() ([]types.Session, error) {
 func StartChat(model string) {
 	fmt.Println("Starting chat with model:", model)
 	fmt.Println("Type 'exit' to quit")
-<<<<<<< HEAD
-=======
 	fmt.Println("Type 'recall' to test memory recall")
->>>>>>> c6d0afb (feat: P1-P4 production readiness improvements)
 	fmt.Println("")
 
 	reader := bufio.NewReader(os.Stdin)
 
 	var messages []types.Message
-<<<<<<< HEAD
-=======
 	var conversationContext string
 
 	// Pre-load all sessions for memory recall
@@ -123,7 +118,6 @@ func StartChat(model string) {
 	if err != nil {
 		fmt.Println("Warning: Could not load sessions for memory recall:", err)
 	}
->>>>>>> c6d0afb (feat: P1-P4 production readiness improvements)
 
 	for {
 		fmt.Print("You: ")
@@ -140,20 +134,15 @@ func StartChat(model string) {
 			break
 		}
 
-<<<<<<< HEAD
-=======
 		if input == "recall" {
 			fmt.Println("Memory recall feature - use regular queries to search context")
 			continue
 		}
 
->>>>>>> c6d0afb (feat: P1-P4 production readiness improvements)
 		if input == "" {
 			continue
 		}
 
-<<<<<<< HEAD
-=======
 		// Build memory context from ranked memories
 		if len(sessions) > 0 {
 			ranked, err := memory.RankMemories(input, sessions, 3)
@@ -182,44 +171,94 @@ func StartChat(model string) {
 		prompt += fmt.Sprintf("USER: %s\n", input)
 		prompt += "ASSISTANT:"
 
-		// Send to Ollama
-		aiResponse, err := QueryOllama(model, prompt)
-		if err != nil {
-			fmt.Printf("Error: %v\n\n", err)
-			continue
-		}
-
-		// Store messages
->>>>>>> c6d0afb (feat: P1-P4 production readiness improvements)
+		// Store user message
 		userMsg := types.Message{
 			Role:    "user",
 			Content: input,
 			Time:    time.Now(),
 		}
-<<<<<<< HEAD
-
 		messages = append(messages, userMsg)
 
-		fmt.Println("[AI response would appear here - Ollama integration pending]")
+		// Stream response from Ollama
+		fmt.Print("Assistant: ")
+		aiResponse, err := QueryOllamaStreaming(model, prompt)
+		if err != nil {
+			fmt.Printf("Error: %v\n\n", err)
+			continue
+		}
 		fmt.Println("")
-	}
-}
-=======
-		messages = append(messages, userMsg)
+		fmt.Println("")
 
+		// Store assistant message
 		assistantMsg := types.Message{
 			Role:    "assistant",
 			Content: aiResponse,
 			Time:    time.Now(),
 		}
 		messages = append(messages, assistantMsg)
-
-		// Print response
-		fmt.Printf("Assistant: %s\n\n", aiResponse)
 	}
 }
 
-// QueryOllama sends a prompt to Ollama and returns the response
+// QueryOllamaStreaming sends a prompt to Ollama and streams the response in real-time
+func QueryOllamaStreaming(model string, prompt string) (string, error) {
+	reqBody := OllamaRequest{
+		Model:  model,
+		Prompt: prompt,
+		Stream: true,
+	}
+
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.Post(
+		"http://localhost:11434/api/generate",
+		"application/json",
+		bytes.NewBuffer(jsonData),
+	)
+
+	if err != nil {
+		return "", fmt.Errorf("connection error: %w (ensure Ollama is running)", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("ollama returned status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Read streaming response line by line
+	var fullResponse strings.Builder
+	decoder := json.NewDecoder(resp.Body)
+
+	for {
+		var result OllamaStreamResponse
+		err := decoder.Decode(&result)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return "", fmt.Errorf("failed to parse response: %w", err)
+		}
+
+		// Print chunk as it arrives
+		fmt.Print(result.Response)
+		fullResponse.WriteString(result.Response)
+
+		if result.Done {
+			break
+		}
+	}
+
+	if fullResponse.Len() == 0 {
+		return "", fmt.Errorf("empty response from model")
+	}
+
+	return strings.TrimSpace(fullResponse.String()), nil
+}
+
+// QueryOllama sends a prompt to Ollama and returns the full response (non-streaming)
 func QueryOllama(model string, prompt string) (string, error) {
 	reqBody := OllamaRequest{
 		Model:  model,
@@ -260,4 +299,3 @@ func QueryOllama(model string, prompt string) (string, error) {
 
 	return strings.TrimSpace(result.Response), nil
 }
->>>>>>> c6d0afb (feat: P1-P4 production readiness improvements)
