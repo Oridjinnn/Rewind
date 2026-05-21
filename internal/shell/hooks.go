@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/redact"
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/redact"
+	"github.com/Oridjinnn/Rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // GetSetupScript returns the shell setup code that user should add to their rc file

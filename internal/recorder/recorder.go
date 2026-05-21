@@ -6,11 +6,8 @@ import (
 	"os/exec"
 	"sync"
 	"time"
-	"github.com/habeldavidson007-glitch/rewind/internal/redact"
-	"github.com/Oridjinnn/Rewind/internal/redact"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/utils"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/redact"
 	"github.com/Oridjinnn/Rewind/internal/utils"
 	"github.com/Oridjinnn/Rewind/pkg/types"
 )

@@ -3,7 +3,7 @@ package meta
 import (
 	"strings"
 
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 func GenerateMetadata(

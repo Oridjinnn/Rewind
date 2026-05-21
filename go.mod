@@ -1,4 +1,4 @@
-module github.com/habeldavidson007-glitch/rewind
+module github.com/Oridjinnn/Rewind
 
 go 1.22
 

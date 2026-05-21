@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // AnalyzeProject generates productivity insights from IDE activity data.

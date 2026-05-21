@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/internal/storage"
 )
 
 // Manager handles shell history operations using any ShellHistoryStorage backend.
