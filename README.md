@@ -398,6 +398,7 @@ rewind/
 | `REWIND_DB_PATH` | `rewind.db` | Custom SQLite path |
 | `REWIND_USE_JSON` | `false` | Force JSON file storage |
 | `REWIND_ENABLED` | `true` | Shell auto-recording toggle |
+| `REWIND_REDACT` | `false` | Secret redaction: `true` to redact, `skip` to skip entirely |
 
 ### Ollama (for AI features)
 - Endpoint: `http://localhost:11434`

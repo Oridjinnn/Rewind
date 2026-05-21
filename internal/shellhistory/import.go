@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/habeldavidson007-glitch/rewind/internal/redact"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 )
 
@@ -75,7 +76,11 @@ func parseBashHistory(file *os.File) ([]string, error) {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		commands = append(commands, line)
+		// Apply secret redaction before storing
+		cmd := redact.RedactCommand(line)
+		if cmd != "" {
+			commands = append(commands, cmd)
+		}
 	}
 
 	return commands, scanner.Err()
@@ -91,7 +96,11 @@ func parseZshHistory(file *os.File) ([]string, error) {
 		line := scanner.Text()
 		cmd := extractZshCommand(line)
 		if cmd != "" {
-			commands = append(commands, cmd)
+			// Apply secret redaction before storing
+			redacted := redact.RedactCommand(cmd)
+			if redacted != "" {
+				commands = append(commands, redacted)
+			}
 		}
 	}
 
@@ -138,7 +147,11 @@ func parseFishHistory(path string) ([]string, error) {
 		if strings.HasPrefix(line, "- cmd:") {
 			cmd := strings.TrimSpace(strings.TrimPrefix(line, "- cmd:"))
 			if cmd != "" {
-				commands = append(commands, cmd)
+				// Apply secret redaction before storing
+				redacted := redact.RedactCommand(cmd)
+				if redacted != "" {
+					commands = append(commands, redacted)
+				}
 			}
 		}
 	}

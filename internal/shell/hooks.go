@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/habeldavidson007-glitch/rewind/internal/redact"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
@@ -103,6 +104,13 @@ end
 
 // TrackCommand records the command that was just executed
 func TrackCommand(cmdStr string, exitCode int) error {
+	// Apply secret redaction if enabled
+	cmdStr = redact.RedactCommand(cmdStr)
+	if cmdStr == "" {
+		// Command contained secrets and REWIND_REDACT=skip mode is active
+		return nil
+	}
+
 	// Parse command and args
 	parts := strings.Fields(cmdStr)
 	if len(parts) == 0 {
