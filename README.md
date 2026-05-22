@@ -18,25 +18,25 @@ SQLite-backed. Multi-IDE. Opt-in privacy. Local-first.
 
 ## ️ Major Reworks & Updates (v0.2.x)
 
-Proyek ini telah melalui perombakan arsitektur besar-besaran untuk memastikan stabilitas dan performa tinggi pada perangkat lokal:
+This project has undergone a major architectural overhaul to ensure stability and high performance on local devices:
 
-- **Core Migration to SQLite**: Menggantikan penyimpanan JSON statis dengan backend **SQLite (Zero-CGO)** yang tangguh. Menggunakan mode WAL dan indexing agresif untuk pencarian instan.
-- **Hybrid Cognitive Ranking**: Implementasi ulang algoritma pencarian memori. Rewind sekarang menggabungkan **Semantic Similarity** (Vector Embeddings) dengan **Recency Decay** (faktor waktu) agar konteks yang diberikan ke LLM selalu relevan dan terbaru.
-- **Reflection Engine Implementation**: AI tidak lagi hanya menyimpan chat, tetapi "merenungkan" setiap sesi untuk mengekstrak *Inferred Knowledge* (seperti tujuan proyek dan preferensi teknis) secara otomatis dalam format terstruktur.
+- **Core Migration to SQLite**: Replaced static JSON storage with a robust **SQLite (Zero-CGO)** backend. Utilizes WAL mode and aggressive indexing for instantaneous searches.
+- **Hybrid Cognitive Ranking**: Reimplemented the memory search algorithm. Rewind now combines **Semantic Similarity** (Vector Embeddings) with **Recency Decay** (time factor) to ensure the context provided to the LLM is always relevant and up-to-date.
+- **Reflection Engine Implementation**: The AI no longer just stores chat logs; it "reflects" on every session to automatically extract **Inferred Knowledge** (such as project goals and technical preferences) in a structured format.
 - **Performance Overhaul**: 
-    - Optimasi query database (N+1 menjadi *single JOIN*) yang meningkatkan kecepatan pemuatan sesi hingga 2000x.
-    - Reduksi overhead LLM pada proses *summarization* (4x lebih cepat).
-    - Sistem *pre-filtering* memori untuk menghemat penggunaan CPU pada perangkat dengan RAM terbatas.
-- **Unified IDE Protocol**: Membangun protokol JSON-RPC yang seragam untuk mendukung ekosistem multi-IDE (VS Code, JetBrains, Neovim) secara bersamaan melalui satu server pusat.
-- **Shell Integration Rework**: Sistem *non-blocking hooks* baru untuk menangkap riwayat shell (`bash`, `zsh`, `fish`) secara real-time tanpa mengganggu responsivitas terminal.
+    - Database query optimization (refactored N+1 queries into **single JOINs**), increasing session loading speed by up to 2000x.
+    - Reduced LLM overhead during the summarization process (4x faster).
+    - Implemented a memory **pre-filtering** system to save CPU usage on devices with limited RAM.
+- **Unified IDE Protocol**: Established a uniform JSON-RPC protocol to support a multi-IDE ecosystem (VS Code, JetBrains, Neovim) simultaneously through a single centralized server.
+- **Shell Integration Rework**: A new **non-blocking hooks** system to capture shell history (`bash`, `zsh`, `fish`) in real-time without impacting terminal responsiveness.
 
 ---
 
 ## 🧠 The Cognition Engine
 
-Rewind bukan sekadar alat pencatat; ia adalah lapisan kecerdasan untuk alur kerja Anda:
-- **Smart Recall**: Memberikan memori jangka panjang kepada LLM kecil (Qwen/Llama) sehingga mereka memahami konteks proyek Anda tanpa perlu *prompt engineering* manual yang rumit.
-- **Privacy-First Intelligence**: Semua pemrosesan (embedding, ranking, dan refleksi) dilakukan 100% secara lokal. Data Anda tidak pernah meninggalkan mesin Anda.
+Rewind is not just a logging tool; it is an intelligence layer for your workflow:
+- **Smart Recall**: Provides long-term memory to small LLMs (Qwen/Llama) so they understand your project context without requiring complex manual prompt engineering.
+- **Privacy-First Intelligence**: All processing (embedding, ranking, and reflection) is performed 100% locally. Your data never leaves your machine.
 
 ---
 
