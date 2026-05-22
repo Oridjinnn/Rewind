@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Oridjinnn/Rewind/internal/config"
 	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
@@ -107,7 +108,7 @@ func SaveEmbeddingCache(cache *EmbeddingCache) error {
 // DefaultEmbedder returns a pre-configured Ollama embedder (nomic-embed-text).
 func DefaultEmbedder() Embedder {
 	return &OllamaEmbedder{
-		BaseURL: "http://127.0.0.1:11434",
+		BaseURL: config.GetOllamaHost(),
 		Model:   "nomic-embed-text",
 		Client:  ollamaClient,
 	}
@@ -124,13 +125,12 @@ func (o *OllamaEmbedder) EmbedText(text string) ([]float64, error) {
 		"prompt": trimmed,
 	}
 
-	body, _ := json.Marshal(payload)
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err = http.NewRequest("POST", o.BaseURL+"/api/embeddings", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", o.BaseURL+"/api/embeddings", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}

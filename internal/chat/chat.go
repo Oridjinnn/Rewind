@@ -13,6 +13,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"github.com/Oridjinnn/Rewind/internal/config"
 
 	"github.com/Oridjinnn/Rewind/internal/memory"
 	"github.com/Oridjinnn/Rewind/internal/storage"
@@ -292,7 +293,7 @@ func QueryOllamaStreaming(model string, prompt string) (string, error) {
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", "http://127.0.0.1:11434/api/generate", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", config.GetOllamaHost()+"/api/generate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", err
 	}
@@ -435,7 +436,7 @@ func QueryOllama(model string, prompt string) (string, error) {
 
 // newOllamaRequest builds a hardened HTTP request for the Ollama API
 func newOllamaRequest(method, path string, body []byte) (*http.Request, error) {
-	url := fmt.Sprintf("http://127.0.0.1:11434%s", path)
+	url := fmt.Sprintf("%s%s", config.GetOllamaHost(), path)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
