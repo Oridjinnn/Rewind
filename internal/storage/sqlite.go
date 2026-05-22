@@ -507,8 +507,10 @@ func (s *SQLiteStore) QueryIDEActivity(filter types.IDEActivityFilter) ([]types.
 		args = append(args, filter.ActivityType)
 	}
 	if filter.FilePath != "" {
-		query += " AND file_path LIKE ?"
-		args = append(args, "%"+filter.FilePath+"%")
+		// Broaden search to metadata and activity type for better recall (fixes RecallAcrossIDE logic bug)
+		query += " AND (file_path LIKE ? OR metadata LIKE ? OR activity_type LIKE ?)"
+		pattern := "%" + filter.FilePath + "%"
+		args = append(args, pattern, pattern, pattern)
 	}
 	if filter.Language != "" {
 		query += " AND language = ?"
