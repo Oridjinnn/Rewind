@@ -34,8 +34,10 @@ func Embed(text string) ([]float64, error) {
 	resp, err := http.Post(
 		config.GetOllamaHost()+"/api/embeddings",
 		"application/json",
-		bytes.NewBuffer(b),
-	)
+
+	bytes.NewBuffer(b),
+)
+
 
 
 	if err != nil {

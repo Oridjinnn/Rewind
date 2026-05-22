@@ -24,6 +24,7 @@ func Generate(
 	prompt string,
 ) (string, error) {
 
+
 	reqBody := GenerateRequest{
 		Model:  model,
 		Prompt: prompt,

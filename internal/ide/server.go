@@ -11,7 +11,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Oridjinnn/Rewind/internal/config"
 )
+
 
 // Server runs an HTTP server that receives IDE events.
 type Server struct {
@@ -24,10 +27,11 @@ type Server struct {
 // NewServer creates a new IDE event HTTP server.
 func NewServer(recorder *SQLiteRecorder, port int) *Server {
 	if port == 0 {
-		port = ServerPort
+		port = config.GetIDEPort()
 	}
 	return &Server{recorder: recorder, port: port}
 }
+
 
 // Start begins listening for IDE events.
 func (s *Server) Start() error {

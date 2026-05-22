@@ -9,8 +9,8 @@ import (
 
 const (
 	ProtocolVersion = "rewind-ide-v1"
-	ServerPort      = 9876
 )
+
 
 // ValidIDEs lists all IDE names supported by the protocol.
 var ValidIDEs = map[string]bool{

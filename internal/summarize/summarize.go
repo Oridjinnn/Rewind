@@ -71,12 +71,9 @@ Return ONLY the JSON, no other text.
 Conversation:
 %s`, conversation)
 
-	model := os.Getenv("REWIND_SUMMARIZE_MODEL")
-	if model == "" {
-		model = "qwen2.5:1.5b"
-	}
-
+	model := config.GetSummarizeModel()
 	response := QueryOllamaSimple(model, prompt)
+
 
 	// Parse structured JSON response
 	var parsed struct {
