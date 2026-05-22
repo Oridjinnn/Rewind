@@ -21,7 +21,7 @@ type Response struct {
 func Embed(text string) ([]float64, error) {
 
 	reqBody := Request{
-		Model:  "nomic-embed-text",
+		Model:  config.GetEmbedModel(),
 		Prompt: text,
 	}
 

@@ -109,7 +109,7 @@ func SaveEmbeddingCache(cache *EmbeddingCache) error {
 func DefaultEmbedder() Embedder {
 	return &OllamaEmbedder{
 		BaseURL: config.GetOllamaHost(),
-		Model:   "nomic-embed-text",
+		Model:   config.GetEmbedModel(),
 		Client:  ollamaClient,
 	}
 }
