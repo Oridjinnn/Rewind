@@ -261,14 +261,22 @@ func RankMemoriesV2(embedder Embedder, query string, sessions []types.Session, t
 			// Phase 2.1: Recency Score (30% weight)
 			recencyScore := calculateRecencyScore(e.Timestamp)
 
-			// Phase 2.2: Importance Heuristic
+			// Phase 2.2 & 3.3: Knowledge Graph Boost
 			// Pesan dari user biasanya berisi instruksi atau konteks yang lebih krusial untuk recall
-			importance := 1.0
+			boost := 1.0
 			if e.Type == "user" || e.Type == "user_message" {
-				importance = 1.2
+				boost += 0.2
 			}
 
-			finalScore := ((semanticScore * 0.7) + (recencyScore * 0.3)) * importance
+			// Knowledge Graph Boost: Jika query mengandung tag sesi, beri bonus besar
+			for _, tag := range s.Tags {
+				if strings.Contains(queryLower, strings.ToLower(tag)) {
+					boost += 0.3
+					break
+				}
+			}
+
+			finalScore := ((semanticScore * 0.7) + (recencyScore * 0.3)) * boost
 
 			ranked = append(ranked, RankedMemory{
 				SessionID: s.ID,

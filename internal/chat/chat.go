@@ -207,8 +207,11 @@ func saveChatSession(sessionID, model string, messages []types.Message) {
 
 	// Phase 3.2: Reflection Engine - Inferred Cognition
 	// Analisis percakapan untuk mendapatkan summary yang lebih cerdas
-	reflection := ReflectOnSession(model, messages)
-	summary := reflection
+	insight, tags := ReflectOnSession(model, messages)
+	summary := insight
+	if len(tags) > 0 && summary != "" {
+		summary = fmt.Sprintf("%s (Tags: %s)", insight, strings.Join(tags, ", "))
+	}
 	if summary == "" {
 		summary = fmt.Sprintf("Chat with %s - %d messages", model, len(messages))
 	}
@@ -228,6 +231,7 @@ func saveChatSession(sessionID, model string, messages []types.Message) {
 		Model:     model,
 		Title:     title,
 		Summary:   summary,
+		Tags:      tags,
 		StartedAt: now,
 		EndedAt:   now,
 		ExitCode:  0,
@@ -336,36 +340,53 @@ func QueryOllamaStreaming(model string, prompt string) (string, error) {
 	return strings.TrimSpace(fullResponse.String()), nil
 }
 
+// ReflectionResult represents structured session analysis
+type ReflectionResult struct {
+	Insight string   `json:"insight"`
+	Tags    []string `json:"tags"`
+}
+
 // ReflectOnSession analyzes the chat to extract inferred user knowledge (Phase 3.2)
-func ReflectOnSession(model string, messages []types.Message) string {
+func ReflectOnSession(model string, messages []types.Message) (string, []string) {
 	if len(messages) < 2 {
-		return ""
+		return "", nil
 	}
 
 	var conv strings.Builder
 	for _, m := range messages {
-		role := "User"
-		if m.Role == "assistant" {
-			role = "AI"
-		}
-		conv.WriteString(fmt.Sprintf("%s: %s\n", role, m.Content))
+		conv.WriteString(fmt.Sprintf("%s: %s\n", strings.ToUpper(m.Role), m.Content))
 	}
 
-	prompt := fmt.Sprintf(`Analyze this chat session. Identify the main project or technical goal the user is working on.
-Format your response as a single concise insight starting with "User is...".
-Example: "User is building a local-first memory system for AI agents in Go."
+	prompt := fmt.Sprintf(`Analyze this chat session. Extract the main project goal and key technical tags (languages, tools, projects).
+Return ONLY a JSON object with this format:
+{"insight": "User is building...", "tags": ["golang", "sqlite", "rewind"]}
 
 Chat:
 %s
 
-Insight:`, conv.String())
+JSON:`, conv.String())
 
 	// Phase 1.2: Timeout-safe reflection
 	res, err := QueryOllama(model, prompt)
 	if err != nil {
-		return ""
+		return "", nil
 	}
-	return res
+
+	// Clean JSON from potential markdown blocks
+	res = strings.TrimPrefix(res, "```json")
+	res = strings.TrimSuffix(res, "```")
+	res = strings.TrimSpace(res)
+
+	var result ReflectionResult
+	if err := json.Unmarshal([]byte(res), &result); err != nil {
+		// Fallback to plain string if JSON fails
+		if len(res) > 0 {
+			return res, nil
+		}
+		return "", nil
+	}
+
+	return result.Insight, result.Tags
 }
 
 // QueryOllama sends a prompt to Ollama and returns the full response (non-streaming)
