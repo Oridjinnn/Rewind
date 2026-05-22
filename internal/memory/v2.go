@@ -40,8 +40,12 @@ type EmbeddingCache struct {
 
 // GetCachePath returns the path to the embedding cache file for a session.
 // Embedding cache is stored in .rewind/embeddings/ (separated from user session data).
+// NOTE: To be deprecated in v0.3.1 in favor of SQLite embedding table.
 func GetCachePath(sessionID string) string {
-	return filepath.Join(".rewind", "embeddings", fmt.Sprintf("%s.json", sessionID))
+	dir := filepath.Join(".rewind", "embeddings")
+	// Ensure directory exists
+	os.MkdirAll(dir, 0755)
+	return filepath.Join(dir, fmt.Sprintf("%s.json", sessionID))
 }
 
 // LoadEmbeddingCache loads cached embeddings from disk
