@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 type OllamaRequest struct {
@@ -67,7 +68,12 @@ Return ONLY the JSON, no other text.
 Conversation:
 %s`, conversation)
 
-	response := QueryOllamaSimple("qwen2.5:1.5b", prompt)
+	model := os.Getenv("REWIND_SUMMARIZE_MODEL")
+	if model == "" {
+		model = "qwen2.5:1.5b"
+	}
+
+	response := QueryOllamaSimple(model, prompt)
 
 	// Parse structured JSON response
 	var parsed struct {
@@ -113,7 +119,10 @@ func QueryOllamaSimple(model string, prompt string) string {
 		Stream: false,
 	}
 
-	jsonData, _ := json.Marshal(reqBody)
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return "Error marshalling request"
+	}
 
 	resp, err := http.Post(
 		"http://localhost:11434/api/generate",

@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // Global http client with timeout to prevent hanging
@@ -125,8 +125,12 @@ func (o *OllamaEmbedder) EmbedText(text string) ([]float64, error) {
 	}
 
 	body, _ := json.Marshal(payload)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
 
-	req, err := http.NewRequest("POST", o.BaseURL+"/api/embeddings", bytes.NewBuffer(body))
+	req, err = http.NewRequest("POST", o.BaseURL+"/api/embeddings", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}

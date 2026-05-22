@@ -33,6 +33,9 @@ htmlcov/
 *.swp
 *.swo
 *.tmp
+extensions/vscode/out/
+extensions/vscode/*.vsix
+extensions/vscode/=
 
 # Logs
 *.log

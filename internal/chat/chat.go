@@ -14,9 +14,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/memory"
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/memory"
+	"github.com/Oridjinnn/Rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 var ollamaChatClient = &http.Client{

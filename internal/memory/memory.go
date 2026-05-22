@@ -1,7 +1,7 @@
 package memory
 
 import (
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // DEPRECATED: Use v2.go for semantic memory and hybrid ranking.

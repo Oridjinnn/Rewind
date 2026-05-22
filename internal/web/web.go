@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/recall"
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/recall"
+	"github.com/Oridjinnn/Rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 var pageTemplate = template.Must(template.New("page").Parse(`<!doctype html>
