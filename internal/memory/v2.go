@@ -20,6 +20,11 @@ var ollamaClient = &http.Client{
 	Timeout: 10 * time.Second,
 }
 
+// Embedder defines the interface for generating vector embeddings.
+type Embedder interface {
+	EmbedText(text string) ([]float64, error)
+}
+
 type EmbedResponse struct {
 	Embedding []float64 `json:"embedding"`
 }
@@ -120,7 +125,9 @@ func GetOrEmbedEvent(sessionID string, eventIndex int, event types.Event, cache 
 
 func EmbedText(text string) ([]float64, error) {
 
-	if text == "" {
+	// Phase 1.1: Fix potential empty string crash/waste
+	trimmed := strings.TrimSpace(text)
+	if trimmed == "" {
 		return nil, errors.New("empty text")
 	}
 
@@ -142,6 +149,10 @@ func EmbedText(text string) ([]float64, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("ollama embedding failed with status: %d", resp.StatusCode)
+	}
+
 	var result EmbedResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
@@ -156,8 +167,8 @@ func EmbedText(text string) ([]float64, error) {
 }
 
 func CosineSimilarity(a, b []float64) float64 {
-	// Ensure vectors are the same length and not empty
-	if len(a) != len(b) || len(a) == 0 {
+	// Phase 1.1: Explicit safety checks
+	if a == nil || b == nil || len(a) != len(b) || len(a) == 0 {
 		return 0
 	}
 

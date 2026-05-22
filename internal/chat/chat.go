@@ -79,7 +79,12 @@ func StartChat(model string) {
 				fmt.Println("[Using memory context from previous sessions]")
 				conversationContext = "RELEVANT CONTEXT FROM MEMORY:\n"
 				for i, r := range ranked {
-					conversationContext += fmt.Sprintf("%d. [Session %s] %s\n", i+1, r.SessionID, r.Content)
+					// Phase 2.3: Simple context compression/truncation
+					content := r.Content
+					if len(content) > 500 {
+						content = content[:497] + "..."
+					}
+					conversationContext += fmt.Sprintf("%d. [Session %s] %s\n", i+1, r.SessionID, content)
 				}
 				conversationContext += "\n---\n\n"
 			}
