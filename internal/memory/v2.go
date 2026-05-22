@@ -61,7 +61,12 @@ func GetCachePath(sessionID string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s.json", sessionID))
 }
 
-// LoadEmbeddingCache loads cached embeddings from disk
+// EmbedText generates embeddings using the default global embedder.
+func EmbedText(text string) ([]float64, error) {
+	return DefaultEmbedder().EmbedText(text)
+}
+
+// LoadEmbeddingCache loads cached embeddings from disk.
 func LoadEmbeddingCache(sessionID string) (*EmbeddingCache, error) {
 	cachePath := GetCachePath(sessionID)
 
@@ -99,39 +104,7 @@ func SaveEmbeddingCache(cache *EmbeddingCache) error {
 	return nil
 }
 
-// GetOrEmbedEvent gets embedding from cache or generates it
-func GetOrEmbedEvent(sessionID string, eventIndex int, event types.Event, cache *EmbeddingCache) ([]float64, error) {
-	
-	// Check cache first
-	if cache != nil {
-		for _, e := range cache.Events {
-			if e.EventIndex == eventIndex && e.Content == event.Content {
-				return e.Embedding, nil
-			}
-		}
-	}
-
-	// Not in cache, embed it
-	vec, err := EmbedText(event.Content)
-	if err != nil {
-		return nil, err
-	}
-
-	// Add to cache
-	if cache != nil {
-		cache.Events = append(cache.Events, EventEmbedding{
-			EventIndex: eventIndex,
-			Type:       event.Type,
-			Content:    event.Content,
-			Embedding:  vec,
-			Timestamp:  event.Timestamp,
-		})
-	}
-
-	return vec, nil
-}
-
-// DefaultEmbedder returns a pre-configured Ollama embedder.
+// DefaultEmbedder returns a pre-configured Ollama embedder (nomic-embed-text).
 func DefaultEmbedder() Embedder {
 	return &OllamaEmbedder{
 		BaseURL: "http://127.0.0.1:11434",
@@ -217,7 +190,21 @@ func RankMemoriesV2(embedder Embedder, query string, sessions []types.Session, t
 
 	var ranked []RankedMemory
 
-	for _, s := range sessions {
+	// Phase 5.2: Aggressive Pre-filtering (Local-First Optimization)
+	// Hanya proses sesi yang relevan secara teks atau 15 sesi terbaru untuk menghemat CPU.
+	queryLower := strings.ToLower(query)
+	var candidateSessions []types.Session
+	for i, s := range sessions {
+		isRecent := i < 15
+		matchesKeyword := strings.Contains(strings.ToLower(s.Title), queryLower) || 
+						  strings.Contains(strings.ToLower(s.Summary), queryLower)
+		
+		if isRecent || matchesKeyword {
+			candidateSessions = append(candidateSessions, s)
+		}
+	}
+
+	for _, s := range candidateSessions {
 		// Phase 1.1: Load cache for this session
 		cache, err := LoadEmbeddingCache(s.ID)
 		if err != nil {
@@ -243,10 +230,23 @@ func RankMemoriesV2(embedder Embedder, query string, sessions []types.Session, t
 				continue
 			}
 
-			// Get or embed - uses cache if available
-			vec, err := GetOrEmbedEvent(s.ID, eventIdx, e, cache)
-			if err != nil {
-				continue
+			var vec []float64
+			if cachedVec := findInCache(cache, eventIdx, e.Content); cachedVec != nil {
+				vec = cachedVec
+			} else {
+				vec, err = embedder.EmbedText(e.Content)
+				if err != nil {
+					continue
+				}
+				// Update cache structure
+				cache.Events = append(cache.Events, EventEmbedding{
+					EventIndex: eventIdx,
+					Type:       e.Type,
+					Content:    e.Content,
+					Embedding:  vec,
+					Timestamp:  e.Timestamp,
+				})
+				dirtyCache = true
 			}
 
 			// Phase 2.1: Semantic Similarity

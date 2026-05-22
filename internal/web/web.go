@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"path/filepath"
+	"os"
 	"sort"
 	"strings"
 	"time"

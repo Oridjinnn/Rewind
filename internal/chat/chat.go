@@ -351,15 +351,16 @@ func ReflectOnSession(model string, messages []types.Message) string {
 		conv.WriteString(fmt.Sprintf("%s: %s\n", role, m.Content))
 	}
 
-	prompt := fmt.Sprintf(`Analyze the following chat and provide a single-sentence summary of what was learned about the user's current project, preferences, or technical goals. 
-Start the sentence with "User is...". Focus on inferred knowledge, not just repeating the chat.
+	prompt := fmt.Sprintf(`Analyze this chat session. Identify the main project or technical goal the user is working on.
+Format your response as a single concise insight starting with "User is...".
+Example: "User is building a local-first memory system for AI agents in Go."
 
 Chat:
 %s
 
-Summary:`, conv.String())
+Insight:`, conv.String())
 
-	// Menggunakan timeout pendek untuk refleksi agar tidak menghambat penutupan aplikasi
+	// Phase 1.2: Timeout-safe reflection
 	res, err := QueryOllama(model, prompt)
 	if err != nil {
 		return ""
