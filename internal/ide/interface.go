@@ -1,7 +1,7 @@
 package ide
 
 import (
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // Recorder stores IDE activity events and manages permissions.

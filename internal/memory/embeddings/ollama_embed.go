@@ -22,7 +22,11 @@ func Embed(text string) ([]float64, error) {
 		Prompt: text,
 	}
 
-	b, _ := json.Marshal(reqBody)
+	b, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, err
+	}
+
 
 	resp, err := http.Post(
 		"http://127.0.0.1:11434/api/embeddings",

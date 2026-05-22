@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // Storage defines the interface for session storage backends.

@@ -61,8 +61,15 @@ func GenerateMetadata(
 
 	// SUMMARY
 
-	session.Summary =
-		"Automatically generated conversation summary."
+	// SUMMARY
+	// Use a simple, deterministic summary based on the first user intent.
+	// (Previously this was a placeholder and broke downstream expectations.)
+	if session.Title != "" {
+		session.Summary = "Summary: " + session.Title + "."
+	} else {
+		session.Summary = "Summary: AI conversation." 
+	}
+
 }
 
 func containsAny(s string, keywords ...string) bool {

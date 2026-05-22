@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // EnableRecording enables recording for an IDE (optionally per project).

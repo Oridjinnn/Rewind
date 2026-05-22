@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/ui"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/ui"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 func PrintSessionScore(

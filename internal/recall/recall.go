@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 func Recall(

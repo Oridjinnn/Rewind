@@ -27,7 +27,10 @@ func Generate(
 		Stream: false,
 	}
 
-	jsonData, _ := json.Marshal(reqBody)
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
 
 	resp, err := http.Post(
 		"http://localhost:11434/api/generate",

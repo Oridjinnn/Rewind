@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/habeldavidson007-glitch/rewind/internal/shellhistory"
-	"github.com/habeldavidson007-glitch/rewind/internal/storage"
-	"github.com/habeldavidson007-glitch/rewind/pkg/types"
+	"github.com/Oridjinnn/Rewind/internal/shellhistory"
+	"github.com/Oridjinnn/Rewind/internal/storage"
+	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
 // Bridge connects IDE activity to shell history and sessions.
@@ -85,8 +85,9 @@ func (b *Bridge) GetProjectContext(projectPath string, limit int) (map[string]in
 func (b *Bridge) RecallAcrossIDE(query string, limit int) ([]string, error) {
 	var results []string
 
-	// Search IDE activities
+	// Search IDE activities (broaden beyond file_path to improve recall)
 	ideActivities, _ := b.recorder.QueryActivity(types.IDEActivityFilter{
+		// Query is used as file path / metadata / activity type by SQLite implementation.
 		FilePath: query,
 		Limit:    limit,
 	})
