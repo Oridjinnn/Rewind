@@ -2,7 +2,7 @@
   "name": "rewind-ide",
   "displayName": "Rewind IDE - Terminal Memory & Activity Tracker",
   "description": "Record, replay, and recall your IDE activity with AI-powered memory. Tracks file edits, terminal commands, git operations, builds, tests, and AI assistant interactions. Works with VS Code and Cursor.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "Oridjinnn",
   "license": "MIT",
   "repository": {

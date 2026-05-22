@@ -16,9 +16,9 @@ SQLite-backed. Multi-IDE. Opt-in privacy. Local-first.
 
 ---
 
-## 🧠 The Cognition Engine (v0.2.0)
+## 🧠 The Cognition Engine (v0.2.1-beta)
 
-Unlike simple logging tools, Rewind 0.2.0 introduces a dedicated intelligence layer:
+Unlike simple logging tools, Rewind 0.2.1-beta introduces a dedicated intelligence layer:
 - **Hybrid Ranking**: Combines Semantic Similarity (Vector Embeddings) with Recency Decay and Importance Scoring.
 - **Reflection Engine**: Automatically analyzes session endings to extract "Inferred Knowledge" (e.g., *“User is debugging a Go memory leak”*).
 - **Local-First Optimization**: Aggressive pre-filtering and context compression, designed to run smoothly on 8GB RAM without a GPU.
@@ -437,7 +437,7 @@ rewind/
 
 | Version | Milestone |
 |---------|-----------|
-| **v0.2-beta** | Current — all features implemented |
+| **v0.2.1-beta** | Current — all features implemented |
 | **v0.3** | FTS5 full-text search, embedding cache in SQLite, VS Code `.vsix` release |
 | **v1.0** | CI/CD, test suite, multi-model AI support, marketplace publishing |
 
