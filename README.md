@@ -1,8 +1,10 @@
 # 🔄 Rewind
 
-**Record, replay, and recall your terminal sessions & IDE activity with AI-powered memory.**
+**Rewind is a local-first cognitive memory runtime that makes small LLMs smarter through persistent semantic memory.**
 
-Rewind captures every command, file edit, build, test, and AI interaction—then makes it searchable, replayable, and chat-queryable. SQLite-backed. Multi-IDE. Opt-in privacy. Local-first.
+Rewind captures every command, file edit, and AI interaction, transforming raw logs into a structured cognitive layer. It allows small LLMs (like Qwen or Llama) to remember your project context across sessions with near-zero latency.
+
+SQLite-backed. Multi-IDE. Opt-in privacy. Local-first.
 
 [![Go 1.22+](https://img.shields.io/badge/Go-1.22%2B-00ADD8?logo=go)](https://golang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -11,6 +13,15 @@ Rewind captures every command, file edit, build, test, and AI interaction—then
 [![Neovim](https://img.shields.io/badge/Neovim-plugin-green?logo=neovim)](extensions/nvim)
 
 ![Demo](demo.gif)
+
+---
+
+## 🧠 The Cognition Engine (v0.2.0)
+
+Unlike simple logging tools, Rewind 0.2.0 introduces a dedicated intelligence layer:
+- **Hybrid Ranking**: Combines Semantic Similarity (Vector Embeddings) with Recency Decay and Importance Scoring.
+- **Reflection Engine**: Automatically analyzes session endings to extract "Inferred Knowledge" (e.g., *“User is debugging a Go memory leak”*).
+- **Local-First Optimization**: Aggressive pre-filtering and context compression, designed to run smoothly on 8GB RAM without a GPU.
 
 ---
 
