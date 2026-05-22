@@ -1,0 +1,35 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: rewind
+    main: ./cmd/rewind
+    binary: rewind
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=1
+
+archives:
+  - format: tar.gz
+    name_template: "rewind_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  github:
+    owner: Oridjinnn
+    name: Rewind
+
