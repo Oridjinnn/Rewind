@@ -71,10 +71,12 @@ type IDEActivityFilter struct {
 	ProjectPath  string `json:"project_path,omitempty"`
 	ActivityType string `json:"activity_type,omitempty"`
 	FilePath     string `json:"file_path,omitempty"`
+	Keyword      string `json:"keyword,omitempty"`
 	Language     string `json:"language,omitempty"`
 	Limit        int    `json:"limit"`
 	Offset       int    `json:"offset"`
 }
+
 
 // IDEProject represents a tracked IDE project.
 type IDEProject struct {

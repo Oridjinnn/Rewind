@@ -3,8 +3,10 @@ package meta
 import (
 	"strings"
 
+	"github.com/Oridjinnn/Rewind/internal/summarize"
 	"github.com/Oridjinnn/Rewind/pkg/types"
 )
+
 
 func GenerateMetadata(
 	session *types.Session,
@@ -60,15 +62,26 @@ func GenerateMetadata(
 	}
 
 	// SUMMARY
-
-	// SUMMARY
-	// Use a simple, deterministic summary based on the first user intent.
-	// (Previously this was a placeholder and broke downstream expectations.)
-	if session.Title != "" {
-		session.Summary = "Summary: " + session.Title + "."
-	} else {
-		session.Summary = "Summary: AI conversation." 
+	// Generate real summary via internal summarizer (Ollama).
+	// If summarization fails/returns empty, fall back to a minimal summary.
+	var conversation []string
+	for _, e := range session.Events {
+		if e.Type == "user_message" || e.Type == "assistant_message" {
+			conversation = append(conversation, e.Type+": "+e.Content)
+		}
 	}
+	conversationText := strings.Join(conversation, "\n")
+	if conversationText != "" {
+		summary := summarize.GenerateSummary(conversationText)
+		if summary != "" {
+			session.Summary = summary
+		} else {
+			session.Summary = "Session recorded."
+		}
+	} else {
+		session.Summary = "Session recorded."
+	}
+
 
 }
 
