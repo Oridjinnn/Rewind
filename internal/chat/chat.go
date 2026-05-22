@@ -206,7 +206,7 @@ func saveChatSession(sessionID, model string, messages []types.Message) {
 	}
 
 	// Phase 3.2: Reflection Engine - Inferred Cognition
-	// Analisis percakapan untuk mendapatkan summary yang lebih cerdas
+	// Analyze conversation for a smarter summary
 	insight, tags := ReflectOnSession(model, messages)
 	summary := insight
 	if len(tags) > 0 && summary != "" {
@@ -373,7 +373,8 @@ JSON:`, conv.String())
 	}
 
 	// Clean JSON from potential markdown blocks
-	res = strings.TrimPrefix(res, "```json")
+	res = strings.TrimSpace(res)
+	res = strings.TrimPrefix(strings.TrimPrefix(res, "```json"), "```")
 	res = strings.TrimSuffix(res, "```")
 	res = strings.TrimSpace(res)
 

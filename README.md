@@ -17,11 +17,47 @@ SQLite-backed. Multi-IDE. Opt-in privacy. Local-first.
 ---
 
 ## 🧠 The Cognition Engine (v0.2.1-beta)
+## 🎉 v0.2.1-beta — The Memory Release
 
 Unlike simple logging tools, Rewind 0.2.1-beta introduces a dedicated intelligence layer:
 - **Hybrid Ranking**: Combines Semantic Similarity (Vector Embeddings) with Recency Decay and Importance Scoring.
 - **Reflection Engine**: Automatically analyzes session endings to extract "Inferred Knowledge" (e.g., *“User is debugging a Go memory leak”*).
 - **Local-First Optimization**: Aggressive pre-filtering and context compression, designed to run smoothly on 8GB RAM without a GPU.
+### 🗄️ SQLite Database Backend
+- **Zero-CGO Implementation**: Powered by `modernc.org/sqlite` for pure Go portability.
+- **Robust Schema**: 5 tables, 11 indexes, WAL mode, and Foreign Key constraints.
+- **Migration Path**: One-command JSON → SQLite migration via `rewind migrate`.
+- **Search**: Full-text search across all sessions with `rewind search`.
+- **Hybrid Storage**: Automatic fallback to JSON via `REWIND_USE_JSON=true`.
+
+### 🐚 System Shell History
+- **Wide Support**: Import from `bash`, `zsh`, and `fish` history files.
+- **Real-Time Tracking**: Capture commands with exit codes via non-blocking background hooks.
+- **Analytics**: Usage statistics including total/unique commands and top-10 activities.
+
+### 🧠 Multi-IDE Extensibility
+- **Unified Server**: Centralized HTTP server (`rewind ide start`) for all extensions.
+- **VS Code / Cursor**: Feature-rich TypeScript extension with status bar and granular configuration.
+- **JetBrains**: Kotlin-based plugin for IntelliJ, GoLand, PyCharm, WebStorm, and more.
+- **Neovim**: Lightweight Lua plugin with autocommands and `:RewindToggle`.
+- **Privacy First**: Opt-in recording model managed per-IDE and per-project.
+
+### 🔧 Performance & Intelligence
+- **Cognition Engine**: Memperkenalkan **Hybrid Ranking** (Semantic + Recency) dan **Reflection Engine**.
+- **Summarizer Optimization**: Reduced Ollama calls from 4 to 1 (4x faster).
+- **Database Efficiency**: Optimized `LoadAllSessions` from N+1 queries into a single JOIN (up to 2000x faster).
+- **Local Optimization**: Aggressive pre-filtering and context compression for 8GB RAM environments.
+- **Code Quality**: Replaced old O(n²) sorting with Go standard `sort.Slice()`.
+
+**📦 Release Impact**: 28 new files across the Go backend, VS Code, JetBrains, and Neovim integrations. Full Changelog
+
+---
+
+## 🧠 The Cognition Engine
+
+Rewind provides a specialized intelligence layer:
+- **Hybrid Ranking**: Balances Semantic Similarity (Embeddings) with Recency Decay.
+- **Reflection Engine**: Extracts implicit knowledge (e.g., *"User is fixing a memory leak"*).
 
 ---
 

@@ -191,7 +191,7 @@ func RankMemoriesV2(embedder Embedder, query string, sessions []types.Session, t
 	var ranked []RankedMemory
 
 	// Phase 5.2: Aggressive Pre-filtering (Local-First Optimization)
-	// Hanya proses sesi yang relevan secara teks atau 15 sesi terbaru untuk menghemat CPU.
+	// Only process textually relevant sessions or the 15 most recent sessions to save CPU.
 	queryLower := strings.ToLower(query)
 	var candidateSessions []types.Session
 	for i, s := range sessions {

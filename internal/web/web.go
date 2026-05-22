@@ -161,10 +161,10 @@ func filterSessions(sessions []types.Session, query string) []types.Session {
 
 func sortSessions(sessions []types.Session) {
 	sort.SliceStable(sessions, func(i, j int) bool {
-		iTime, err1 := time.Parse(time.RFC3339, sessions[i].StartedAt)
-		jTime, err2 := time.Parse(time.RFC3339, sessions[j].StartedAt)
-		if err1 == nil && err2 == nil {
-			return jTime.Before(iTime)
+		// RFC3339 strings are lexicographically sortable. 
+		// Comparing strings is significantly faster than parsing time in a loop.
+		if sessions[i].StartedAt != sessions[j].StartedAt {
+			return sessions[i].StartedAt > sessions[j].StartedAt
 		}
 		return sessions[i].ID > sessions[j].ID
 	})
