@@ -8,13 +8,23 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/habeldavidson007-glitch/rewind/internal/memory"
 	"github.com/habeldavidson007-glitch/rewind/internal/storage"
 	"github.com/habeldavidson007-glitch/rewind/pkg/types"
 )
+
+var ollamaChatClient = &http.Client{
+	// Timeout lebih lama untuk streaming, tapi tetap ada batasnya
+	Timeout: 5 * time.Minute,
+}
+
+var saveOnce sync.Once
 
 type OllamaRequest struct {
 	Model  string `json:"model"`
@@ -32,13 +42,30 @@ func StartChat(model string) {
 	fmt.Println("Starting chat with model:", model)
 	fmt.Println("Type 'exit' to quit")
 	fmt.Println("Type 'recall' to test memory recall")
-	fmt.Println("")
+	fmt.Println("---")
 
 	reader := bufio.NewReader(os.Stdin)
-
 	var messages []types.Message
 	var conversationContext string
 	sessionID := fmt.Sprintf("chat_%d", time.Now().UnixNano())
+
+	// Initialize Embedder for Phase 4 architecture
+	embedder := memory.DefaultEmbedder()
+
+	// Phase 1.3: Exit System Stabilization (Handle Ctrl+C)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		fmt.Println("\n[Interrupt received] Saving session and exiting...")
+		if len(messages) > 0 {
+			saveOnce.Do(func() {
+				saveChatSession(sessionID, model, messages)
+			})
+		}
+		os.Exit(0)
+	}()
 
 	// Pre-load all sessions for memory recall using storage layer
 	sessions, err := storage.LoadAllSessions()
@@ -72,21 +99,45 @@ func StartChat(model string) {
 
 		// Build memory context from ranked memories
 		if len(sessions) > 0 {
-			ranked, err := memory.RankMemories(input, sessions, 3)
+			ranked, err := memory.RankMemoriesV2(embedder, input, sessions, 5)
 			if err != nil {
 				fmt.Println("Note: Memory recall failed:", err)
 			} else if len(ranked) > 0 {
-				fmt.Println("[Using memory context from previous sessions]")
-				conversationContext = "RELEVANT CONTEXT FROM MEMORY:\n"
-				for i, r := range ranked {
-					// Phase 2.3: Simple context compression/truncation
-					content := r.Content
-					if len(content) > 500 {
-						content = content[:497] + "..."
+				// Phase 2.4: Deduplication Logic
+				uniqueContent := make(map[string]bool)
+				var contextParts []string
+
+				for _, r := range ranked {
+					cleanContent := strings.TrimSpace(r.Content)
+					
+					// Skip if we've already added very similar content
+					// or if the content is too short to be useful
+					if uniqueContent[cleanContent] || len(cleanContent) < 10 {
+						continue
 					}
-					conversationContext += fmt.Sprintf("%d. [Session %s] %s\n", i+1, r.SessionID, content)
+					uniqueContent[cleanContent] = true
+
+					// Phase 2.3: Context Compression
+					// Truncate long memories to keep the prompt focused
+					maxSnippetLen := 400
+					if len(cleanContent) > maxSnippetLen {
+						cleanContent = cleanContent[:maxSnippetLen] + "... (truncated)"
+					}
+					
+					contextParts = append(contextParts, fmt.Sprintf("[%s]: %s", r.SessionID, cleanContent))
+					
+					// Dynamic Budget: Max 3 high-quality memories for small LLMs
+					if len(contextParts) >= 3 {
+						break
+					}
 				}
-				conversationContext += "\n---\n\n"
+
+				if len(contextParts) > 0 {
+					fmt.Printf("[Cognitive Recall: %d relevant memories injected]\n", len(contextParts))
+					conversationContext = "INFERRED CONTEXT FROM PREVIOUS SESSIONS:\n" + 
+						strings.Join(contextParts, "\n") + 
+						"\n---\nUse the context above to inform your response if relevant.\n\n"
+				}
 			}
 		}
 
@@ -131,7 +182,9 @@ func StartChat(model string) {
 	}
 
 	// Save chat session to SQLite storage
-	saveChatSession(sessionID, model, messages)
+	saveOnce.Do(func() {
+		saveChatSession(sessionID, model, messages)
+	})
 }
 
 // saveChatSession persists the chat conversation as a session in SQLite.
@@ -152,9 +205,15 @@ func saveChatSession(sessionID, model string, messages []types.Message) {
 		})
 	}
 
-	// Build title from first user message
+	// Phase 3.2: Reflection Engine - Inferred Cognition
+	// Analisis percakapan untuk mendapatkan summary yang lebih cerdas
+	reflection := ReflectOnSession(model, messages)
+	summary := reflection
+	if summary == "" {
+		summary = fmt.Sprintf("Chat with %s - %d messages", model, len(messages))
+	}
+
 	title := "Chat session"
-	summary := fmt.Sprintf("Chat with %s - %d messages", model, len(messages))
 	if len(messages) > 0 {
 		firstMsg := messages[0].Content
 		if len(firstMsg) > 80 {
@@ -229,11 +288,13 @@ func QueryOllamaStreaming(model string, prompt string) (string, error) {
 		return "", err
 	}
 
-	resp, err := http.Post(
-		"http://localhost:11434/api/generate",
-		"application/json",
-		bytes.NewBuffer(jsonData),
-	)
+	req, err := http.NewRequest("POST", "http://127.0.0.1:11434/api/generate", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := ollamaChatClient.Do(req)
 
 	if err != nil {
 		return "", fmt.Errorf("connection error: %w (ensure Ollama is running)", err)
@@ -275,6 +336,37 @@ func QueryOllamaStreaming(model string, prompt string) (string, error) {
 	return strings.TrimSpace(fullResponse.String()), nil
 }
 
+// ReflectOnSession analyzes the chat to extract inferred user knowledge (Phase 3.2)
+func ReflectOnSession(model string, messages []types.Message) string {
+	if len(messages) < 2 {
+		return ""
+	}
+
+	var conv strings.Builder
+	for _, m := range messages {
+		role := "User"
+		if m.Role == "assistant" {
+			role = "AI"
+		}
+		conv.WriteString(fmt.Sprintf("%s: %s\n", role, m.Content))
+	}
+
+	prompt := fmt.Sprintf(`Analyze the following chat and provide a single-sentence summary of what was learned about the user's current project, preferences, or technical goals. 
+Start the sentence with "User is...". Focus on inferred knowledge, not just repeating the chat.
+
+Chat:
+%s
+
+Summary:`, conv.String())
+
+	// Menggunakan timeout pendek untuk refleksi agar tidak menghambat penutupan aplikasi
+	res, err := QueryOllama(model, prompt)
+	if err != nil {
+		return ""
+	}
+	return res
+}
+
 // QueryOllama sends a prompt to Ollama and returns the full response (non-streaming)
 func QueryOllama(model string, prompt string) (string, error) {
 	reqBody := OllamaRequest{
@@ -288,11 +380,12 @@ func QueryOllama(model string, prompt string) (string, error) {
 		return "", err
 	}
 
-	resp, err := http.Post(
-		"http://localhost:11434/api/generate",
-		"application/json",
-		bytes.NewBuffer(jsonData),
-	)
+	req, err := newOllamaRequest("POST", "/api/generate", jsonData)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := ollamaChatClient.Do(req)
 
 	if err != nil {
 		return "", fmt.Errorf("connection error: %w (ensure Ollama is running)", err)
@@ -315,4 +408,15 @@ func QueryOllama(model string, prompt string) (string, error) {
 	}
 
 	return strings.TrimSpace(result.Response), nil
+}
+
+// newOllamaRequest builds a hardened HTTP request for the Ollama API
+func newOllamaRequest(method, path string, body []byte) (*http.Request, error) {
+	url := fmt.Sprintf("http://127.0.0.1:11434%s", path)
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return req, nil
 }
