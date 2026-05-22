@@ -81,8 +81,6 @@ func GenerateMetadata(
 	} else {
 		session.Summary = "Session recorded."
 	}
-
-
 }
 
 func containsAny(s string, keywords ...string) bool {
