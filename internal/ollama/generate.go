@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+
+	"github.com/Oridjinnn/Rewind/internal/config"
 )
+
 
 type GenerateRequest struct {
 	Model  string `json:"model"`
@@ -33,10 +36,11 @@ func Generate(
 	}
 
 	resp, err := http.Post(
-		"http://localhost:11434/api/generate",
+		config.GetOllamaHost()+"/api/generate",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
+
 
 	if err != nil {
 		return "", err

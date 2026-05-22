@@ -4,7 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+
+	"github.com/Oridjinnn/Rewind/internal/config"
 )
+
 
 type Request struct {
 	Model  string `json:"model"`
@@ -29,10 +32,11 @@ func Embed(text string) ([]float64, error) {
 
 
 	resp, err := http.Post(
-		"http://127.0.0.1:11434/api/embeddings",
+		config.GetOllamaHost()+"/api/embeddings",
 		"application/json",
 		bytes.NewBuffer(b),
 	)
+
 
 	if err != nil {
 		return nil, err

@@ -8,6 +8,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Oridjinnn/Rewind/internal/config"
+
+
 	"github.com/Oridjinnn/Rewind/pkg/types"
 )
 
@@ -125,10 +128,11 @@ func QueryOllamaSimple(model string, prompt string) string {
 	}
 
 	resp, err := http.Post(
-		"http://localhost:11434/api/generate",
+		config.GetOllamaHost()+"/api/generate",
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
+
 
 	if err != nil {
 		return "Error connecting to Ollama"
